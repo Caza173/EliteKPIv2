@@ -1,0 +1,483 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Webkit autofill styling */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active {
+    -webkit-box-shadow: 0 0 0 30px white inset !important;
+    box-shadow: 0 0 0 30px white inset !important;
+    -webkit-text-fill-color: black !important;
+}
+
+/* iPhone 16 Pro optimizations */
+@supports (-webkit-appearance: none) {
+  .ios-safe-area {
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+  }
+  
+  .ios-safe-top {
+    padding-top: env(safe-area-inset-top);
+  }
+  
+  .ios-safe-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+}
+
+/* iPhone specific adjustments - All models */
+@media screen and (max-width: 430px) {
+  /* All iPhone models portrait mode optimizations */
+  body {
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  .mobile-optimized {
+    min-height: 100vh;
+    min-height: 100dvh; /* Dynamic viewport height for iPhone */
+  }
+  
+  /* Better touch targets for iPhone */
+  button, .btn, [role="button"], a {
+    min-height: 44px;
+    min-width: 44px;
+    touch-action: manipulation;
+  }
+  
+  /* Prevent zoom on input focus */
+  input, select, textarea {
+    font-size: 16px;
+  }
+  
+  /* Optimize card layouts for iPhone */
+  .grid {
+    grid-template-columns: 1fr !important;
+    gap: 0.75rem !important;
+  }
+  
+  /* Better spacing for iPhone screens */
+  .p-6 {
+    padding: 1rem !important;
+  }
+  
+  .p-4 {
+    padding: 0.75rem !important;
+  }
+  
+  /* Sidebar optimizations */
+  .sidebar-mobile {
+    width: 280px !important;
+  }
+}
+
+/* General mobile text and layout fixes */
+@media screen and (max-width: 640px) {
+  /* Prevent text overflow on mobile */
+  * {
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+  }
+  
+  /* Better container constraints */
+  .container, .max-w-7xl, .max-w-6xl, .max-w-5xl, .max-w-4xl {
+    max-width: 100vw;
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+  
+  /* Text sizing for mobile */
+  .text-lg {
+    font-size: 1rem;
+  }
+  
+  .text-xl {
+    font-size: 1.125rem;
+  }
+  
+  .text-2xl {
+    font-size: 1.25rem;
+  }
+  
+  /* Better table handling on mobile */
+  table {
+    font-size: 0.875rem;
+    overflow-x: auto;
+    display: block;
+    white-space: nowrap;
+  }
+  
+  /* Card content spacing */
+  .card-content {
+    padding: 1rem;
+  }
+  
+  /* iPhone specific modal optimizations */
+  .dialog-content {
+    width: 95vw !important;
+    max-width: 95vw !important;
+    max-height: 90vh !important;
+    margin: 1rem !important;
+  }
+  
+  /* Better form layouts */
+  .form-grid {
+    grid-template-columns: 1fr !important;
+    gap: 1rem !important;
+  }
+  
+  /* Optimize button groups */
+  .button-group {
+    flex-direction: column !important;
+    gap: 0.5rem !important;
+  }
+  
+  .button-group button {
+    width: 100% !important;
+  }
+}
+
+:root {
+  --bg: #ffffff;
+  --card: #ffffff;
+  --border: #e5e7eb;
+  --accent: #374151;
+  --success: #059669;
+  --warn: #d97706;
+  --danger: #dc2626;
+  --info: #0891b2;
+  
+  --background: 255 255 255;
+  --foreground: 17 24 39;
+  --card: 255 255 255;
+  --card-foreground: 17 24 39;
+  --popover: 255 255 255;
+  --popover-foreground: 17 24 39;
+  --primary: 139 92 246;
+  --primary-foreground: 255 255 255;
+  --secondary: 243 244 246;
+  --secondary-foreground: 139 92 246;
+  --muted: 249 250 251;
+  --muted-foreground: 107 114 128;
+  --accent: 249 250 251;
+  --accent-foreground: 17 24 39;
+  --destructive: 220 38 38;
+  --destructive-foreground: 255 255 255;
+  --border: 229 231 235;
+  --input: 255 255 255;
+  --ring: 156 163 175;
+  --chart-1: 55 65 81;
+  --chart-2: 5 150 105;
+  --chart-3: 8 145 178;
+  --chart-4: 139 69 19;
+  --chart-5: 220 38 38;
+  --sidebar: 255 255 255;
+  --sidebar-foreground: 17 24 39;
+  --sidebar-primary: 55 65 81;
+  --sidebar-primary-foreground: 255 255 255;
+  --sidebar-accent: 249 250 251;
+  --sidebar-accent-foreground: 55 65 81;
+  --sidebar-border: 229 231 235;
+  --sidebar-ring: 156 163 175;
+  --font-sans: 'Geist', Inter, system-ui, sans-serif;
+  --font-serif: Georgia, serif;
+  --font-mono: 'Geist Mono', Menlo, monospace;
+  --radius: 0.5rem;
+}
+
+.light {
+  --background: 255 255 255;
+  --foreground: 17 24 39;
+  --card: 255 255 255;
+  --card-foreground: 17 24 39;
+  --popover: 255 255 255;
+  --popover-foreground: 17 24 39;
+  --primary: 139 92 246;
+  --primary-foreground: 255 255 255;
+  --secondary: 243 244 246;
+  --secondary-foreground: 139 92 246;
+  --muted: 249 250 251;
+  --muted-foreground: 107 114 128;
+  --accent: 249 250 251;
+  --accent-foreground: 17 24 39;
+  --destructive: 220 38 38;
+  --destructive-foreground: 255 255 255;
+  --border: 229 231 235;
+  --input: 255 255 255;
+  --ring: 156 163 175;
+  --chart-1: 55 65 81;
+  --chart-2: 5 150 105;
+  --chart-3: 8 145 178;
+  --chart-4: 139 69 19;
+  --chart-5: 220 38 38;
+  --sidebar: 255 255 255;
+  --sidebar-foreground: 17 24 39;
+  --sidebar-primary: 55 65 81;
+  --sidebar-primary-foreground: 255 255 255;
+  --sidebar-accent: 249 250 251;
+  --sidebar-accent-foreground: 17 24 39;
+  --sidebar-border: 229 231 235;
+  --sidebar-ring: 156 163 175;
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+    min-height: 100vh;
+    background: #ffffff;
+  }
+  
+  body.light {
+    background: #ffffff;
+  }
+  
+  body.dark {
+    background: #000000;
+  }
+  
+  /* Enhanced scrollbars */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  
+  ::-webkit-scrollbar-track {
+    background: hsl(0 0% 96%);
+    border-radius: 3px;
+  }
+  
+  ::-webkit-scrollbar-thumb {
+    background: hsl(0 0% 75%);
+    border-radius: 3px;
+  }
+  
+  ::-webkit-scrollbar-thumb:hover {
+    background: hsl(0 0% 65%);
+  }
+}
+
+@layer components {
+  /* Beautiful gradient card */
+  .modern-card {
+    background: linear-gradient(135deg, #faf5ff 0%, #f0f9ff 100%);
+    border: 1px solid rgba(139, 92, 246, 0.2);
+    border-radius: 0.5rem;
+    box-shadow: 0 1px 3px rgba(139, 92, 246, 0.1);
+    transition: all 0.2s ease;
+  }
+  
+  .modern-card:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px hsl(0 0% 0% / 0.15);
+    border-color: hsl(0 0% 80%);
+  }
+  
+  /* Gradient sidebar */
+  .modern-sidebar {
+    background: linear-gradient(180deg, #ffffff 0%, #faf5ff 100%);
+    border-right: 1px solid rgba(139, 92, 246, 0.1);
+    box-shadow: 1px 0 3px rgba(139, 92, 246, 0.05);
+  }
+  
+  /* Modern button */
+  .modern-button {
+    background: hsl(0 0% 15%);
+    border: none;
+    border-radius: 0.5rem;
+    box-shadow: 0 1px 2px hsl(0 0% 0% / 0.1);
+    transition: all 0.2s ease;
+  }
+  
+  .modern-button:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px hsl(0 0% 0% / 0.2);
+    background: hsl(0 0% 10%);
+  }
+  
+  /* Modern navigation */
+  .nav-modern {
+    border-radius: 0.5rem;
+    transition: all 0.2s ease;
+  }
+  
+  .nav-modern.active {
+    background: linear-gradient(135deg, #8b5cf6 0%, #3b82f6 100%);
+    color: white;
+    box-shadow: 0 1px 3px rgba(139, 92, 246, 0.3);
+  }
+  
+  .nav-modern:hover:not(.active) {
+    background: hsl(0 0% 96%);
+  }
+  
+  /* Beautiful gradient text without yellow */
+  .text-modern-gradient {
+    background: linear-gradient(135deg, #8b5cf6 0%, #3b82f6 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    font-weight: 600;
+  }
+  
+  /* Modern accent */
+  .modern-accent {
+    background: hsl(0 0% 96%);
+    border-radius: 0.5rem;
+    border: 1px solid hsl(0 0% 90%);
+  }
+  
+  .modern-accent-inner {
+    background: hsl(0 0% 100%);
+    border-radius: 0.375rem;
+    padding: 0.75rem 1rem;
+  }
+
+  /* Enhanced input and select visibility - iPhone optimized */
+  input[type="text"], 
+  input[type="email"], 
+  input[type="number"], 
+  input[type="tel"], 
+  input[type="date"], 
+  input[type="time"], 
+  textarea, 
+  select {
+    border: 1.5px solid hsl(var(--border)) !important;
+    background: hsl(var(--input)) !important;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    padding: 0.75rem !important;
+    font-size: 16px !important; /* Prevent zoom on iPhone */
+    border-radius: 0.5rem !important;
+    -webkit-appearance: none;
+    appearance: none;
+  }
+
+  input[type="text"]:focus, 
+  input[type="email"]:focus, 
+  input[type="number"]:focus, 
+  input[type="tel"]:focus, 
+  input[type="date"]:focus, 
+  input[type="time"]:focus, 
+  textarea:focus, 
+  select:focus {
+    border-color: hsl(var(--ring)) !important;
+    box-shadow: 0 0 0 2px hsl(var(--ring) / 0.2) !important;
+    outline: none;
+  }
+
+  /* Remove browser autofill yellow background */
+  input:-webkit-autofill,
+  input:-webkit-autofill:hover,
+  input:-webkit-autofill:focus,
+  input:-webkit-autofill:active {
+    -webkit-box-shadow: 0 0 0 30px hsl(var(--input)) inset !important;
+    -webkit-text-fill-color: hsl(var(--foreground)) !important;
+    background-color: hsl(var(--input)) !important;
+  }
+
+  /* Select dropdown arrow visibility */
+  select {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+    background-position: right 8px center;
+    background-repeat: no-repeat;
+    background-size: 16px;
+    padding-right: 40px !important;
+  }
+
+  /* iPhone-specific touch optimizations */
+  .touch-manipulation {
+    touch-action: manipulation;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
+  }
+
+  /* Fix for iPhone modal positioning */
+  @media screen and (max-width: 430px) {
+    .fixed {
+      position: -webkit-sticky;
+      position: sticky;
+    }
+    
+    /* Better modal handling on iPhone */
+    [role="dialog"] {
+      max-height: 90vh !important;
+      overflow-y: auto !important;
+      -webkit-overflow-scrolling: touch !important;
+    }
+    
+    /* Ensure buttons are large enough for touch */
+    button, [role="button"], .btn {
+      min-height: 44px !important;
+      padding: 12px 16px !important;
+    }
+    
+    /* Fix input zoom on iPhone */
+    input, textarea, select {
+      font-size: 16px !important;
+      -webkit-appearance: none !important;
+      border-radius: 8px !important;
+    }
+  }
+}
+
+html {
+  @apply light;
+}
+
+html.light {
+  color-scheme: light;
+}
+
+.dark {
+  --background: 0 0 0;
+  --foreground: 255 255 255;
+  --card: 17 24 39;
+  --card-foreground: 255 255 255;
+  --popover: 17 24 39;
+  --popover-foreground: 255 255 255;
+  --primary: 59 130 246;
+  --primary-foreground: 255 255 255;
+  --secondary: 30 41 59;
+  --secondary-foreground: 255 255 255;
+  --muted: 30 41 59;
+  --muted-foreground: 156 163 175;
+  --accent: 30 41 59;
+  --accent-foreground: 255 255 255;
+  --destructive: 239 68 68;
+  --destructive-foreground: 255 255 255;
+  --border: 75 85 99;
+  --input: 17 24 39;
+  --ring: 59 130 246;
+  --chart-1: 59 130 246;
+  --chart-2: 34 197 94;
+  --chart-3: 14 165 233;
+  --chart-4: 168 85 247;
+  --chart-5: 239 68 68;
+  --sidebar: 17 24 39;
+  --sidebar-foreground: 255 255 255;
+  --sidebar-primary: 59 130 246;
+  --sidebar-primary-foreground: 255 255 255;
+  --sidebar-accent: 30 41 59;
+  --sidebar-accent-foreground: 255 255 255;
+  --sidebar-border: 75 85 99;
+  --sidebar-ring: 59 130 246;
+}
+
+html.dark {
+  color-scheme: dark;
+}
+
+/* Tabular numbers utility */
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+

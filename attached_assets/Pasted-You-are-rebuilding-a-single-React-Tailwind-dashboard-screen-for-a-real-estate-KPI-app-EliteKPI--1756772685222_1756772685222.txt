@@ -1,0 +1,73 @@
+You are rebuilding a single React + Tailwind dashboard screen for a real-estate KPI app (EliteKPI). 
+The current output overuses gradients and looks low-contrast. Create a crisp, professional **dark** UI that is easy to scan.
+
+STACK
+- React + Vite + TypeScript
+- Tailwind CSS only (no custom CSS files)
+- shadcn/ui for Cards, Progress, Tooltip, Dropdown
+- lucide-react for icons
+- recharts only for small sparklines (no big charts)
+
+HARD STYLE RULES (non-negotiable)
+1) **No gradients, glass, or neumorphism.** Flat surfaces only.
+2) Background: `#0b0f14`. Card bg: `#0f172a` (slate-900). Borders: `#1f2937` (slate-800) 1px.
+3) Text: slate-200 primary, slate-400 labels. Headings: slate-100.
+4) Radius: `rounded-2xl` on cards; `rounded-xl` on pills. Shadow: `shadow-sm` only.
+5) Spacing: consistent 8px scale. Section gap `gap-8`, card padding `p-6`.
+6) Accent color: **gold** `#facc15` for primary highlights; 
+   success `#22c55e`, warning `#f59e0b`, danger `#ef4444`, info `#38bdf8`.
+7) Numbers use `tabular-nums` and larger size than labels.
+8) Any “delta” uses a small pill (icon + %, no background gradients).
+9) Icons are 16–18px, low-ink.
+10) Mobile-first; 12-column grid at xl; 2-column at md; single column at sm.
+
+PAGE LAYOUT (in order)
+- Header: “Dashboard” (left). Right: date range dropdown, theme toggle, user menu.
+- **KPI Grid** (8 cards max): Total Revenue, Total Volume, Properties Closed, Active Listings, Withdrawn, Expired, Avg Sale Price, Avg Commission. 
+  Each card: title (label), big value, tiny delta pill, faint sparkline (recharts) below value.
+- **Overall Efficiency**: 
+  Left = ring gauge (0–100) with 3 zones (danger <60, warning 60–79, success >=80). 
+  Right = factor list with 8 rows; each row is a compact bar w/ weight % tag + tiny trend chevron.
+- **Operational Snapshot** (4 cards): This Month Revenue, Avg Transaction Period, Conversion Rates (buyer/seller bars), Offer Acceptance Rate.
+  Second row: Revenue Per Hour, ROI Performance.
+- **Achievements**: horizontal list of 5 badge cards (Bronze→Diamond) with count chip and “% to next”.
+- **Progress Tracking**: two goal cards side-by-side (Revenue Goal, Sales Target) + 3 stacked progress bars (Buyer Conversion, ROI Target, Activity Streak).
+- **Coming Soon**: three flat teaser cards with icon + one-line benefit + “Notify me” switch.
+
+TAILWIND TOKENS (extend config and use consistently)
+- fonts: add `tabular-nums` utility on KPI values.
+- container: `max-w-screen-2xl` with `mx-auto px-6 md:px-8`.
+- colors (via classes): use slate + custom CSS variables added in globals: 
+  `--bg:#0b0f14; --card:#0f172a; --border:#1f2937; --accent:#facc15; --success:#22c55e; --warn:#f59e0b; --danger:#ef4444; --info:#38bdf8`.
+
+COMPONENTS (build reusable, typed)
+- <KpiCard title string value string delta?:{value:number,dir:"up"|"down"} spark?:{x:string;y:number}[] intent?:"neutral"|"success"|"warning"|"danger" />
+  • Layout: label (xs, slate-400), value (2xl/3xl, tabular-nums), delta pill on the right, sparkline at bottom (height 24).
+- <RingGauge value number thresholds={{warn:60, good:80}} /> (SVG circles; no 3rd-party donut)
+- <FactorRow label string weightPct number trend:-1|0|1 />
+- <GoalCard title string current number target number onCelebrate? () => void />
+- <BadgeCard tier:"Bronze"|"Silver"|"Gold"|"Platinum"|"Diamond" count number progress number />
+
+INTERACTION & ACCESSIBILITY
+- Hover: card shadow-sm→shadow-md; border color brightens to slate-700.
+- Tooltips on deltas, trends, and badges.
+- Confetti only when a goal hits 100% (use lightweight canvas or remove if time).
+- All text meets WCAG 4.5:1; aria-labels on KPI values.
+
+ACCEPTANCE TESTS
+- **No gradients anywhere.**
+- Cards clearly separated by borders and 32px gaps; the page is breathable.
+- Headings visually distinct; numbers are dominant; labels secondary.
+- Red appears only on negatives (Withdrawn/Expired/negative deltas).
+- KPI cards each include a tiny sparkline that never competes with the number.
+- Efficiency shows a clean ring + tidy factor list with aligned weights and trend chevrons.
+- Layout adapts perfectly at sm/md/xl breakpoints.
+- Code is modular in `/src/components` with typed props and mock data in `/src/data/mock.ts`.
+
+DELIVERABLES
+- `src/App.tsx` with sections in the order above.
+- `src/components/*` for all components.
+- `src/data/mock.ts` with realistic numbers.
+- Tailwind configured; global background set to var(--bg); cards use var(--card); borders use var(--border).
+
+Generate the full implementation now with mock data. Keep files small, readable, and consistent with these rules.

@@ -1,0 +1,106 @@
+You are building a polished, production-ready React + Tailwind dashboard screen for a real-estate KPI app (EliteKPI). Refactor/redesign the existing layout to improve visual hierarchy, spacing, and readability while preserving all metrics.
+
+STACK & LIBS
+- React + Vite
+- Tailwind CSS (with container, screens, font-sans)
+- shadcn/ui for cards, badges, tabs, tooltip, progress, dropdown
+- lucide-react for icons
+- recharts for simple charts/sparklines
+- Implement a Light/Dark toggle (system default respected)
+
+DESIGN GOALS
+- Calm, modern, “command center” feel.
+- Clear groupings, generous whitespace, consistent 8pt spacing.
+- Neutral surfaces; color used sparingly for meaning.
+- Red only for critical alerts. Blues/greens for progress; amber for attention.
+- Numbers should pop; labels subdued.
+
+COLOR & TYPE
+- Base: neutral-950/neutral-50 depending on theme.
+- Accent: #0EA5E9 (sky-500) for primary actions/highlights.
+- Success: emerald-500; Warning: amber-500; Danger: rose-500.
+- Font scale: Page H1 22–24, Section H2 18, Card title 15–16, Body 13–14, Labels 12 (tracking-wide).
+- Use tabular-nums on KPIs.
+
+PAGE LAYOUT (top → bottom)
+1) Header Bar
+   - Left: Page title “Dashboard”, subtle breadcrumb.
+   - Right: Date range picker, Light/Dark toggle, user menu.
+2) KPI Summary Grid (3x2 or 4x2 responsive)
+   - Cards with large number, small delta chip, short label.
+   - Include: Total Revenue, Total Volume, Properties Closed, Active Listings, Withdrawn, Expired, Terminated, Avg Sale Price, Avg Commission.
+   - Each card shows a tiny 30-day sparkline (recharts) behind the number (very light).
+3) Overall Efficiency
+   - Left: Ring gauge (0–100) using gradient from rose→amber→emerald based on score.
+   - Right: Weighted factor list as a compact heat list with dots/badges: Conversion (25%), Call Efficiency (15%), ROI (15%), Days on Market (10%), CMA Accuracy (10%), Price Ratio (10%), Time Management (10%), Deal Retention (5%).
+   - Tooltip on each factor: definition + last 30-day trend.
+4) Operational Snapshot (4 cards)
+   - This Month Revenue
+   - Avg Transaction Period
+   - Conversion Rates (Buyer/Seller with mini bars)
+   - Offer Acceptance Rate
+   - Secondary row: Revenue Per Hour, ROI Performance
+5) Achievements (Gamification)
+   - Horizontal scroller of badge cards (Bronze, Silver, Gold, Platinum, Diamond) with count chips.
+   - Progress bar to next tier; tooltip: how to earn next badge.
+6) Progress Tracking
+   - Two goal cards side-by-side:
+     a) Revenue Goal: progress bar with target, % inside bar, and “Celebrate” button that triggers a tasteful confetti animation.
+     b) Sales Target: mini meter with current vs goal and tiny sparkline.
+   - Goal Progress Bars (stacked list):
+     - Buyer Conversion Rate
+     - ROI Performance Target
+     - Daily Activity Streak
+   - Each bar has start/end labels, % inside, and a faint grid to improve readability.
+7) Coming Soon
+   - Three teaser cards: Smart Goals, Team Collaboration, Advanced Forecasting.
+   - Each card: icon, one-line benefit, “Notify me” toggle.
+
+INTERACTIONS
+- Hover states on all cards (lift by shadow-sm → shadow-md, cursor-default).
+- Tooltips on deltas, factors, and badges.
+- Confetti only when a goal turns 100%.
+- Skeleton loaders for charts and KPI numbers.
+- Accessible: color contrast ≥ 4.5:1; provide aria-labels for key KPIs.
+
+COMPONENTS (create reusable, typed)
+- <KpiCard title string value string delta {value:number,direction:"up"|"down"} sparkline data[] variant "neutral"|"success"|"warning"|"danger" />
+- <RingGauge value number thresholds={{warn:60, good:80}} />
+- <FactorList items:[{label, weightPct, weightLevel:"Low"|"Med"|"High", trend:-1|0|1}] />
+- <MiniBar value number max number />
+- <GoalCard title string current number target number onCelebrate? />
+- <BadgeScroller items:[{tier:"Bronze"|"Silver"|"Gold"|"Platinum"|"Diamond", count:number, progress:number}] />
+- <TeaserCard title, description, iconName, actionLabel />
+
+DATA SHAPES (TypeScript types)
+type Delta = { value: number; direction: "up" | "down" };
+type Spark = { x: string; y: number };
+type Kpi = { title: string; value: string; delta?: Delta; spark?: Spark[] };
+type Factor = { label: string; weightPct: number; weightLevel: "Low"|"Med"|"High"; trend: -1|0|1 };
+type Goal = { title: string; current: number; target: number };
+
+ACCEPTANCE CRITERIA
+- The page is fully responsive (xl: 4-column grid for KPIs, md: 2-column, sm: 1-column).
+- Visual hierarchy: section headers clearly distinct; numbers prominent.
+- No dense walls of text; everything is scannable in < 5 seconds.
+- Red appears only on true negatives (e.g., Withdrawn/Expired counts > 0 or Efficiency < 50).
+- Each KPI card renders a faint sparkline that never overpowers the number.
+- Efficiency section shows a color-coded ring + factor heat list with tooltips.
+- Progress bars display percentage inside the bar with smooth animation.
+- Gamification section feels “fun” without being noisy; badge counts visible.
+- Light/Dark themes look equally good with consistent tokens.
+- Code is modular: components above live in /src/components with props validated.
+
+DELIVERABLES
+- App shell: src/App.tsx with sections in order above.
+- Tailwind config extended for tabular-nums and container padding.
+- Components in /src/components with stories or usage examples in the page.
+- Mock data in /src/data/mock.ts for all KPIs, factors, goals, badges.
+- Minimal CSS only via Tailwind classes; no external stylesheets.
+- No hard-coded pixel magic numbers; use Tailwind spacing/size scales.
+
+BONUS (if quick)
+- Persist theme choice in localStorage.
+- Add a compact print/PDF style for the KPI grid and Efficiency section.
+
+Now generate the React code and Tailwind markup to produce this screen with realistic mock data. Keep the file structure clean and runnable immediately in Replit.

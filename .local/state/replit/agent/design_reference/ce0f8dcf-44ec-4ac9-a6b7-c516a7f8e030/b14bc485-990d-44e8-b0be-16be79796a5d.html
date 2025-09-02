@@ -1,0 +1,681 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EliteKPI - Realtor Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'sans': ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                    colors: {
+                        primary: {
+                            50: '#eff6ff',
+                            500: '#3b82f6',
+                            600: '#2563eb',
+                            700: '#1d4ed8'
+                        }
+                    }
+                }
+            }
+        };
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-50 font-sans">
+    <!-- @COMPONENT: AppLayout -->
+    <div class="flex h-screen overflow-hidden">
+        <!-- Sidebar -->
+        <!-- @COMPONENT: Sidebar -->
+        <div class="hidden md:flex md:flex-shrink-0">
+            <div class="flex flex-col w-64">
+                <div class="flex flex-col flex-grow pt-5 pb-4 overflow-y-auto bg-white border-r border-gray-200">
+                    <div class="flex items-center flex-shrink-0 px-4">
+                        <div class="flex items-center">
+                            <div class="flex-shrink-0">
+                                <div class="w-8 h-8 bg-primary-600 rounded-lg flex items-center justify-center">
+                                    <i class="fas fa-chart-line text-white text-sm"></i>
+                                </div>
+                            </div>
+                            <div class="ml-3">
+                                <h1 class="text-xl font-bold text-gray-900">EliteKPI</h1>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-8 flex-grow flex flex-col">
+                        <nav class="flex-1 px-2 space-y-1">
+                            <a href="#dashboard" class="bg-primary-50 border-r-2 border-primary-600 text-primary-700 group flex items-center px-2 py-2 text-sm font-medium">
+                                <i class="fas fa-tachometer-alt text-primary-500 mr-3 text-sm"></i>
+                                Dashboard
+                            </a>
+                            <a href="#properties" class="text-gray-600 hover:bg-gray-50 hover:text-gray-900 group flex items-center px-2 py-2 text-sm font-medium">
+                                <i class="fas fa-home text-gray-400 mr-3 text-sm"></i>
+                                Properties
+                            </a>
+                            <a href="#showings" class="text-gray-600 hover:bg-gray-50 hover:text-gray-900 group flex items-center px-2 py-2 text-sm font-medium">
+                                <i class="fas fa-calendar-alt text-gray-400 mr-3 text-sm"></i>
+                                Showings
+                            </a>
+                            <a href="#cmas" class="text-gray-600 hover:bg-gray-50 hover:text-gray-900 group flex items-center px-2 py-2 text-sm font-medium">
+                                <i class="fas fa-file-alt text-gray-400 mr-3 text-sm"></i>
+                                CMAs
+                            </a>
+                            <a href="#reports" class="text-gray-600 hover:bg-gray-50 hover:text-gray-900 group flex items-center px-2 py-2 text-sm font-medium">
+                                <i class="fas fa-chart-bar text-gray-400 mr-3 text-sm"></i>
+                                Reports
+                            </a>
+                            <a href="#goals" class="text-gray-600 hover:bg-gray-50 hover:text-gray-900 group flex items-center px-2 py-2 text-sm font-medium">
+                                <i class="fas fa-target text-gray-400 mr-3 text-sm"></i>
+                                Goals
+                            </a>
+                            <a href="#performance" class="text-gray-600 hover:bg-gray-50 hover:text-gray-900 group flex items-center px-2 py-2 text-sm font-medium">
+                                <i class="fas fa-chart-pie text-gray-400 mr-3 text-sm"></i>
+                                Performance
+                            </a>
+                        </nav>
+                        <div class="flex-shrink-0 px-2 space-y-1">
+                            <a href="#calculator" class="text-gray-600 hover:bg-gray-50 hover:text-gray-900 group flex items-center px-2 py-2 text-sm font-medium">
+                                <i class="fas fa-calculator text-gray-400 mr-3 text-sm"></i>
+                                GCI Calculator
+                            </a>
+                            <a href="#settings" class="text-gray-600 hover:bg-gray-50 hover:text-gray-900 group flex items-center px-2 py-2 text-sm font-medium">
+                                <i class="fas fa-cog text-gray-400 mr-3 text-sm"></i>
+                                Settings
+                            </a>
+                            <a href="#help" class="text-gray-600 hover:bg-gray-50 hover:text-gray-900 group flex items-center px-2 py-2 text-sm font-medium">
+                                <i class="fas fa-question-circle text-gray-400 mr-3 text-sm"></i>
+                                Help
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- @END_COMPONENT: Sidebar -->
+
+        <!-- Mobile menu button -->
+        <div class="md:hidden fixed top-0 left-0 z-50 bg-white border-b border-gray-200 w-full">
+            <div class="flex items-center justify-between px-4 py-3">
+                <div class="flex items-center">
+                    <div class="w-8 h-8 bg-primary-600 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-chart-line text-white text-sm"></i>
+                    </div>
+                    <h1 class="ml-3 text-xl font-bold text-gray-900">EliteKPI</h1>
+                </div>
+                <button class="text-gray-500 hover:text-gray-600" data-event="click:toggleMobileMenu">
+                    <i class="fas fa-bars text-lg"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Main content -->
+        <!-- @COMPONENT: MainContent -->
+        <div class="flex flex-col w-0 flex-1 overflow-hidden">
+            <!-- Top bar -->
+            <div class="relative z-10 flex-shrink-0 flex h-16 bg-white shadow border-b border-gray-200">
+                <div class="flex-1 px-4 flex justify-between items-center">
+                    <div class="flex-1 flex">
+                        <h2 class="text-2xl font-bold leading-7 text-gray-900 sm:truncate">Dashboard</h2>
+                    </div>
+                    <div class="ml-4 flex items-center md:ml-6">
+                        <div class="relative">
+                            <div class="flex items-center space-x-4">
+                                <span class="text-sm text-gray-700" data-bind="user.name">John Doe</span>
+                                <div class="w-8 h-8 bg-primary-100 rounded-full flex items-center justify-center">
+                                    <i class="fas fa-user text-primary-600 text-sm"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Dashboard Content -->
+            <main class="flex-1 relative overflow-y-auto focus:outline-none p-4 md:p-6 mt-16 md:mt-0">
+                <!-- @COMPONENT: DashboardMetrics -->
+                <!-- Key Metrics Cards -->
+                <div class="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4 mb-8">
+                    <div class="bg-white overflow-hidden shadow rounded-lg">
+                        <div class="p-5">
+                            <div class="flex items-center">
+                                <div class="flex-shrink-0">
+                                    <div class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+                                        <i class="fas fa-dollar-sign text-green-600 text-sm"></i>
+                                    </div>
+                                </div>
+                                <div class="ml-5 w-0 flex-1">
+                                    <dl>
+                                        <dt class="text-sm font-medium text-gray-500 truncate">Total Revenue</dt>
+                                        <dd class="text-lg font-medium text-gray-900" data-bind="metrics.totalRevenue">$142,350</dd>
+                                    </dl>
+                                </div>
+                            </div>
+                            <div class="mt-2 flex items-center text-sm text-green-600">
+                                <i class="fas fa-arrow-up text-xs mr-1"></i>
+                                <span>12.5% from last month</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white overflow-hidden shadow rounded-lg">
+                        <div class="p-5">
+                            <div class="flex items-center">
+                                <div class="flex-shrink-0">
+                                    <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                                        <i class="fas fa-chart-line text-blue-600 text-sm"></i>
+                                    </div>
+                                </div>
+                                <div class="ml-5 w-0 flex-1">
+                                    <dl>
+                                        <dt class="text-sm font-medium text-gray-500 truncate">Total Volume</dt>
+                                        <dd class="text-lg font-medium text-gray-900" data-bind="metrics.totalVolume">$4.8M</dd>
+                                    </dl>
+                                </div>
+                            </div>
+                            <div class="mt-2 flex items-center text-sm text-green-600">
+                                <i class="fas fa-arrow-up text-xs mr-1"></i>
+                                <span>8.2% from last month</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white overflow-hidden shadow rounded-lg">
+                        <div class="p-5">
+                            <div class="flex items-center">
+                                <div class="flex-shrink-0">
+                                    <div class="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center">
+                                        <i class="fas fa-key text-purple-600 text-sm"></i>
+                                    </div>
+                                </div>
+                                <div class="ml-5 w-0 flex-1">
+                                    <dl>
+                                        <dt class="text-sm font-medium text-gray-500 truncate">Properties Closed</dt>
+                                        <dd class="text-lg font-medium text-gray-900" data-bind="metrics.propertiesClosed">23</dd>
+                                    </dl>
+                                </div>
+                            </div>
+                            <div class="mt-2 flex items-center text-sm text-green-600">
+                                <i class="fas fa-arrow-up text-xs mr-1"></i>
+                                <span>3 this month</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white overflow-hidden shadow rounded-lg">
+                        <div class="p-5">
+                            <div class="flex items-center">
+                                <div class="flex-shrink-0">
+                                    <div class="w-8 h-8 bg-orange-100 rounded-full flex items-center justify-center">
+                                        <i class="fas fa-list text-orange-600 text-sm"></i>
+                                    </div>
+                                </div>
+                                <div class="ml-5 w-0 flex-1">
+                                    <dl>
+                                        <dt class="text-sm font-medium text-gray-500 truncate">Active Listings</dt>
+                                        <dd class="text-lg font-medium text-gray-900" data-bind="metrics.activeListings">8</dd>
+                                    </dl>
+                                </div>
+                            </div>
+                            <div class="mt-2 flex items-center text-sm text-gray-600">
+                                <i class="fas fa-minus text-xs mr-1"></i>
+                                <span>2 under contract</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- @END_COMPONENT: DashboardMetrics -->
+
+                <!-- Secondary Metrics Row -->
+                <div class="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 mb-8">
+                    <div class="bg-white overflow-hidden shadow rounded-lg">
+                        <div class="p-5">
+                            <h3 class="text-lg leading-6 font-medium text-gray-900 mb-3">This Month Revenue</h3>
+                            <div class="text-2xl font-bold text-green-600" data-bind="metrics.thisMonthRevenue">$28,750</div>
+                            <div class="mt-2 flex items-center text-sm text-gray-600">
+                                <span>From 4 closings</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white overflow-hidden shadow rounded-lg">
+                        <div class="p-5">
+                            <h3 class="text-lg leading-6 font-medium text-gray-900 mb-3">Avg Transaction Period</h3>
+                            <div class="text-2xl font-bold text-blue-600" data-bind="metrics.avgTransactionPeriod">42 days</div>
+                            <div class="mt-2 flex items-center text-sm text-gray-600">
+                                <span>5 days faster than last quarter</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white overflow-hidden shadow rounded-lg">
+                        <div class="p-5">
+                            <h3 class="text-lg leading-6 font-medium text-gray-900 mb-3">Conversion Rate</h3>
+                            <div class="text-2xl font-bold text-purple-600" data-bind="metrics.conversionRate">68%</div>
+                            <div class="mt-2 flex items-center text-sm text-gray-600">
+                                <span>Appointments to agreements</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Charts and Insights Row -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                    <!-- @COMPONENT: RevenueChart -->
+                    <div class="bg-white shadow rounded-lg">
+                        <div class="p-6">
+                            <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4">Revenue & Expenses</h3>
+                            <div class="h-64 bg-gray-50 rounded-lg flex items-center justify-center">
+                                <!-- @FUNCTIONALITY: Chart.js or similar charting library for revenue/expense trends -->
+                                <div class="text-center text-gray-500">
+                                    <i class="fas fa-chart-area text-3xl mb-2"></i>
+                                    <p>Revenue & Expense Chart</p>
+                                    <p class="text-sm">Integration with Chart.js</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- @END_COMPONENT: RevenueChart -->
+
+                    <!-- @COMPONENT: PerformanceInsights -->
+                    <div class="bg-white shadow rounded-lg">
+                        <div class="p-6">
+                            <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4">Performance Insights</h3>
+                            <div class="space-y-4">
+                                <div class="flex items-start">
+                                    <div class="flex-shrink-0">
+                                        <div class="w-2 h-2 bg-green-400 rounded-full mt-2"></div>
+                                    </div>
+                                    <div class="ml-3">
+                                        <p class="text-sm text-gray-900 font-medium">Strong Call Answer Rate</p>
+                                        <p class="text-sm text-gray-600">82% answer rate - keep up the excellent follow-up</p>
+                                    </div>
+                                </div>
+                                <div class="flex items-start">
+                                    <div class="flex-shrink-0">
+                                        <div class="w-2 h-2 bg-yellow-400 rounded-full mt-2"></div>
+                                    </div>
+                                    <div class="ml-3">
+                                        <p class="text-sm text-gray-900 font-medium">Listing Conversion Opportunity</p>
+                                        <p class="text-sm text-gray-600">Consider more aggressive pricing strategies on listings</p>
+                                    </div>
+                                </div>
+                                <div class="flex items-start">
+                                    <div class="flex-shrink-0">
+                                        <div class="w-2 h-2 bg-blue-400 rounded-full mt-2"></div>
+                                    </div>
+                                    <div class="ml-3">
+                                        <p class="text-sm text-gray-900 font-medium">Revenue Per Hour</p>
+                                        <p class="text-sm text-gray-600" data-bind="insights.revenuePerHour">$347/hour - above industry average</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- @END_COMPONENT: PerformanceInsights -->
+                </div>
+
+                <!-- Quick Actions and Recent Activity -->
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+                    <!-- @COMPONENT: QuickActions -->
+                    <div class="bg-white shadow rounded-lg">
+                        <div class="p-6">
+                            <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4">Quick Actions</h3>
+                            <div class="space-y-3">
+                                <button class="w-full flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50" data-event="click:openAddPropertyModal">
+                                    <i class="fas fa-plus mr-2 text-primary-600"></i>
+                                    Add Property
+                                </button>
+                                <button class="w-full flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50" data-event="click:openAddExpenseModal">
+                                    <i class="fas fa-receipt mr-2 text-primary-600"></i>
+                                    Log Expense
+                                </button>
+                                <button class="w-full flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50" data-event="click:openTimeEntryModal">
+                                    <i class="fas fa-clock mr-2 text-primary-600"></i>
+                                    Log Time
+                                </button>
+                                <button class="w-full flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50" data-event="click:openScheduleShowingModal">
+                                    <i class="fas fa-calendar-plus mr-2 text-primary-600"></i>
+                                    Schedule Showing
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- @END_COMPONENT: QuickActions -->
+
+                    <!-- @COMPONENT: RecentActivity -->
+                    <div class="lg:col-span-2 bg-white shadow rounded-lg">
+                        <div class="p-6">
+                            <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4">Recent Activity</h3>
+                            <div class="flow-root">
+                                <ul class="-mb-8">
+                                    <!-- @MAP: recentActivities.map(activity => ( -->
+                                    <li>
+                                        <div class="relative pb-8">
+                                            <span class="absolute top-4 left-4 -ml-px h-full w-0.5 bg-gray-200"></span>
+                                            <div class="relative flex items-start space-x-3">
+                                                <div class="relative">
+                                                    <div class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+                                                        <i class="fas fa-handshake text-green-600 text-sm"></i>
+                                                    </div>
+                                                </div>
+                                                <div class="min-w-0 flex-1">
+                                                    <div>
+                                                        <div class="text-sm text-gray-500">
+                                                            <span class="font-medium text-gray-900" data-mock="true">Offer accepted</span> on 
+                                                            <span class="font-medium" data-mock="true">123 Main St</span>
+                                                        </div>
+                                                        <p class="mt-0.5 text-sm text-gray-500" data-mock="true">2 hours ago</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </li>
+                                    <li>
+                                        <div class="relative pb-8">
+                                            <span class="absolute top-4 left-4 -ml-px h-full w-0.5 bg-gray-200"></span>
+                                            <div class="relative flex items-start space-x-3">
+                                                <div class="relative">
+                                                    <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                                                        <i class="fas fa-file-alt text-blue-600 text-sm"></i>
+                                                    </div>
+                                                </div>
+                                                <div class="min-w-0 flex-1">
+                                                    <div>
+                                                        <div class="text-sm text-gray-500">
+                                                            <span class="font-medium text-gray-900" data-mock="true">CMA completed</span> for 
+                                                            <span class="font-medium" data-mock="true">456 Oak Avenue</span>
+                                                        </div>
+                                                        <p class="mt-0.5 text-sm text-gray-500" data-mock="true">5 hours ago</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </li>
+                                    <li>
+                                        <div class="relative">
+                                            <div class="relative flex items-start space-x-3">
+                                                <div class="relative">
+                                                    <div class="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center">
+                                                        <i class="fas fa-key text-purple-600 text-sm"></i>
+                                                    </div>
+                                                </div>
+                                                <div class="min-w-0 flex-1">
+                                                    <div>
+                                                        <div class="text-sm text-gray-500">
+                                                            <span class="font-medium text-gray-900" data-mock="true">Property closed</span> - 
+                                                            <span class="font-medium" data-mock="true">789 Pine Street</span>
+                                                        </div>
+                                                        <p class="mt-0.5 text-sm text-gray-500" data-mock="true">1 day ago</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </li>
+                                    <!-- @END_MAP )) -->
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- @END_COMPONENT: RecentActivity -->
+                </div>
+
+                <!-- Tax Estimator -->
+                <!-- @COMPONENT: TaxEstimator -->
+                <div class="bg-white shadow rounded-lg mb-8">
+                    <div class="p-6">
+                        <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4">Quick Tax Estimate</h3>
+                        <div class="flex items-center space-x-6">
+                            <div class="flex-1">
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Tax Rate (%)</label>
+                                <input type="range" min="0" max="50" value="25" class="w-full" data-event="input:updateTaxEstimate">
+                                <div class="flex justify-between text-xs text-gray-500 mt-1">
+                                    <span>0%</span>
+                                    <span data-bind="taxRate">25%</span>
+                                    <span>50%</span>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <div class="text-sm text-gray-500">Estimated Tax</div>
+                                <div class="text-2xl font-bold text-red-600" data-bind="estimatedTax">$35,588</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- @END_COMPONENT: TaxEstimator -->
+
+                <!-- Property Pipeline Overview -->
+                <!-- @COMPONENT: PropertyPipeline -->
+                <div class="bg-white shadow rounded-lg">
+                    <div class="p-6">
+                        <div class="flex items-center justify-between mb-6">
+                            <h3 class="text-lg leading-6 font-medium text-gray-900">Property Pipeline Overview</h3>
+                            <button class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary-600 hover:bg-primary-700" data-event="click:navigateToProperties">
+                                View All Properties
+                                <i class="ml-2 fas fa-arrow-right text-sm"></i>
+                            </button>
+                        </div>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                            <div class="border border-gray-200 rounded-lg p-4">
+                                <div class="flex items-center justify-between mb-3">
+                                    <h4 class="text-sm font-medium text-gray-900">Under Contract</h4>
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                                        2
+                                    </span>
+                                </div>
+                                <div class="text-lg font-semibold text-gray-900 mb-2" data-bind="pipeline.underContract.value">$850K</div>
+                                <div class="space-y-2">
+                                    <div class="text-xs text-gray-600" data-mock="true">• 123 Main St - $425K</div>
+                                    <div class="text-xs text-gray-600" data-mock="true">• 456 Oak Ave - $425K</div>
+                                </div>
+                            </div>
+
+                            <div class="border border-gray-200 rounded-lg p-4">
+                                <div class="flex items-center justify-between mb-3">
+                                    <h4 class="text-sm font-medium text-gray-900">Pending</h4>
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                        3
+                                    </span>
+                                </div>
+                                <div class="text-lg font-semibold text-gray-900 mb-2" data-bind="pipeline.pending.value">$1.2M</div>
+                                <div class="space-y-2">
+                                    <div class="text-xs text-gray-600" data-mock="true">• 789 Pine St - $500K</div>
+                                    <div class="text-xs text-gray-600" data-mock="true">• 321 Elm Dr - $350K</div>
+                                    <div class="text-xs text-gray-600" data-mock="true">• 654 Cedar Ln - $350K</div>
+                                </div>
+                            </div>
+
+                            <div class="border border-gray-200 rounded-lg p-4">
+                                <div class="flex items-center justify-between mb-3">
+                                    <h4 class="text-sm font-medium text-gray-900">Active Listings</h4>
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                        8
+                                    </span>
+                                </div>
+                                <div class="text-lg font-semibold text-gray-900 mb-2" data-bind="pipeline.activeListings.value">$3.1M</div>
+                                <div class="space-y-2">
+                                    <div class="text-xs text-gray-600" data-mock="true">• 8 properties listed</div>
+                                    <div class="text-xs text-gray-600" data-mock="true">• Avg price: $387K</div>
+                                </div>
+                            </div>
+
+                            <div class="border border-gray-200 rounded-lg p-4">
+                                <div class="flex items-center justify-between mb-3">
+                                    <h4 class="text-sm font-medium text-gray-900">In Progress</h4>
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                                        5
+                                    </span>
+                                </div>
+                                <div class="text-lg font-semibold text-gray-900 mb-2">Working</div>
+                                <div class="space-y-2">
+                                    <div class="text-xs text-gray-600" data-mock="true">• 3 buyer clients</div>
+                                    <div class="text-xs text-gray-600" data-mock="true">• 2 potential listings</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- @END_COMPONENT: PropertyPipeline -->
+            </main>
+        </div>
+        <!-- @END_COMPONENT: MainContent -->
+    </div>
+    <!-- @END_COMPONENT: AppLayout -->
+
+    <!-- Add Property Modal -->
+    <!-- @COMPONENT: AddPropertyModal -->
+    <div class="fixed inset-0 z-50 overflow-y-auto hidden" id="addPropertyModal" data-modal="addProperty">
+        <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+            <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"></div>
+            <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+                <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                    <div class="sm:flex sm:items-start">
+                        <div class="w-full">
+                            <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4">Add New Property</h3>
+                            <form class="space-y-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700">Property Address</label>
+                                    <input type="text" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500 sm:text-sm" placeholder="123 Main Street, City, State" data-bind="form.address">
+                                </div>
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700">Representation Type</label>
+                                        <select class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500 sm:text-sm" data-bind="form.representationType">
+                                            <option value="buyer_rep">Buyer Rep</option>
+                                            <option value="seller_rep">Seller Rep</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700">Status</label>
+                                        <select class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500 sm:text-sm" data-bind="form.status">
+                                            <option value="in_progress">In Progress</option>
+                                            <option value="listed">Listed</option>
+                                            <option value="offer_written">Offer Written</option>
+                                            <option value="under_contract">Under Contract</option>
+                                            <option value="pending">Pending</option>
+                                            <option value="closed">Closed</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="grid grid-cols-3 gap-4">
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700">Bedrooms</label>
+                                        <input type="number" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500 sm:text-sm" data-bind="form.bedrooms">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700">Bathrooms</label>
+                                        <input type="number" step="0.5" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500 sm:text-sm" data-bind="form.bathrooms">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700">Square Feet</label>
+                                        <input type="number" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500 sm:text-sm" data-bind="form.squareFeet">
+                                    </div>
+                                </div>
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700">Listing Price</label>
+                                        <input type="number" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500 sm:text-sm" placeholder="425000" data-bind="form.listingPrice">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700">Commission Rate (%)</label>
+                                        <input type="number" step="0.1" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500 sm:text-sm" placeholder="2.5" data-bind="form.commissionRate">
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700">Client Name</label>
+                                    <input type="text" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500 sm:text-sm" placeholder="John & Jane Smith" data-bind="form.clientName">
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                    <button type="button" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-primary-600 text-base font-medium text-white hover:bg-primary-700 focus:outline-none sm:ml-3 sm:w-auto sm:text-sm" data-event="click:saveProperty">
+                        Add Property
+                    </button>
+                    <button type="button" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm" data-event="click:closeModal">
+                        Cancel
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- @END_COMPONENT: AddPropertyModal -->
+
+    <script>
+        (function() {
+            // TODO: Implement business logic, API calls, or state management
+            
+            // Modal functionality
+            function toggleModal(modalId, show = null) {
+                const modal = document.getElementById(modalId);
+                if (!modal) return;
+                
+                if (show === null) {
+                    modal.classList.toggle('hidden');
+                } else {
+                    modal.classList.toggle('hidden', !show);
+                }
+            }
+
+            // Event delegation for click events
+            document.addEventListener('click', function(e) {
+                const element = e.target.closest('[data-event]');
+                if (!element) return;
+                
+                const eventData = element.getAttribute('data-event');
+                const [eventType, handlerName] = eventData.split(':');
+                
+                if (eventType === 'click') {
+                    switch (handlerName) {
+                        case 'openAddPropertyModal':
+                            toggleModal('addPropertyModal', true);
+                            break;
+                        case 'closeModal':
+                            const modal = e.target.closest('[data-modal]');
+                            if (modal) modal.classList.add('hidden');
+                            break;
+                        case 'saveProperty':
+                            // TODO: Implement property saving logic
+                            console.log('Save property logic here');
+                            toggleModal('addPropertyModal', false);
+                            break;
+                        case 'toggleMobileMenu':
+                            // TODO: Implement mobile menu toggle
+                            console.log('Toggle mobile menu');
+                            break;
+                        case 'navigateToProperties':
+                            // TODO: Implement navigation to properties page
+                            console.log('Navigate to properties page');
+                            break;
+                    }
+                }
+            });
+
+            // Tax estimator functionality
+            document.addEventListener('input', function(e) {
+                if (e.target.hasAttribute('data-event') && e.target.getAttribute('data-event').includes('updateTaxEstimate')) {
+                    const taxRate = parseFloat(e.target.value);
+                    const totalRevenue = 142350; // This would come from actual data
+                    const estimatedTax = (totalRevenue * taxRate / 100).toLocaleString();
+                    
+                    // Update display elements
+                    const taxRateDisplay = document.querySelector('[data-bind="taxRate"]');
+                    const estimatedTaxDisplay = document.querySelector('[data-bind="estimatedTax"]');
+                    
+                    if (taxRateDisplay) taxRateDisplay.textContent = taxRate + '%';
+                    if (estimatedTaxDisplay) estimatedTaxDisplay.textContent = '$' + estimatedTax;
+                }
+            });
+
+            // Initialize any default states
+            // TODO: Load actual user data and metrics from API
+            console.log('EliteKPI Dashboard initialized');
+        })();
+    </script>
+</body>
+</html>
