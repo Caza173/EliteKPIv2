@@ -22,14 +22,15 @@ import { apiRequest, queryClient } from "@/lib/queryClient";
 import { Link, useLocation } from "wouter";
 import ReferralProgram from "@/components/referrals/referral-program";
 
-// EliteKPI subscription plans
+// EliteKPI subscription plans - Clean 2-tier structure
 const subscriptionPlans = [
   {
     id: "starter",
     name: "Starter",
     price: 29,
-    description: "Perfect for individual agents just getting started",
+    description: "Perfect for individual agents just getting started.",
     icon: Circle,
+    badge: "Free 1-Week Trial",
     features: [
       "1 user included",
       "Up to 25 active properties",
@@ -51,9 +52,10 @@ const subscriptionPlans = [
     id: "professional",
     name: "Professional",
     price: 69,
-    description: "For established agents and small teams",
+    description: "For established agents and small teams.",
     icon: Star,
     popular: true,
+    badge: "Free 1-Week Trial",
     features: [
       "3 users included (add'l $15/user)",
       "Up to 100 active properties",
@@ -62,7 +64,7 @@ const subscriptionPlans = [
       "Performance analytics (Conversion Rate, Offer Acceptance Rate, DOM, etc.)",
       "Market Timing AI (basic predictions for when to list/close)",
       "Offer Strategies (AI-assisted competitive offer suggestions)",
-      "Office Challenges (gamified tracking for team productivity)",
+      "Office Challenges (gamified productivity tracking)",
       "Competition Hub (agent leaderboard & peer comparisons)",
       "Custom branding",
       "Priority email support",
@@ -74,60 +76,6 @@ const subscriptionPlans = [
       additionalUserCost: 15,
       reports: "Advanced",
       support: "Priority Email"
-    }
-  },
-  {
-    id: "elite",
-    name: "Elite",
-    price: 199,
-    description: "For growing teams needing advanced automation, strategy, and collaboration tools",
-    icon: Zap,
-    features: [
-      "Up to 10 users included (add'l $20/user)",
-      "Up to 500 active properties",
-      "Advanced automation & workflows (status updates, reminders, triggers)",
-      "Advanced reporting & BI dashboards (deep insights & forecasting)",
-      "Full Market Timing AI (predictive analysis + local market trend forecasting)",
-      "Advanced Offer Strategies (tailored, data-driven offer simulations)",
-      "Team collaboration hub (assign tasks, shared pipelines, progress tracking)",
-      "Performance achievements & competition hub (with advanced filtering by team/market)",
-      "White-label branding (your own colors, logos, client-facing reports)",
-      "Custom integrations (CRM, marketing platforms, MLS feeds)",
-      "API access with extended capabilities",
-      "SLA uptime guarantee (99.9%)",
-      "Priority support"
-    ],
-    limits: {
-      users: 10,
-      properties: 500,
-      additionalUserCost: 20,
-      reports: "Advanced BI",
-      support: "Priority",
-      sla: "99.9%"
-    }
-  },
-  {
-    id: "enterprise",
-    name: "Enterprise",
-    price: "Custom Pricing",
-    description: "For brokerages, large offices, and organizations with advanced needs",
-    icon: Crown,
-    features: [
-      "25+ users",
-      "Unlimited properties",
-      "Advanced analytics & business intelligence (multi-office comparisons, market share tracking)",
-      "Custom integrations with in-house systems",
-      "Full team management & permissions",
-      "White-label options for offices/franchises",
-      "SLA guarantee with custom support agreements",
-      "Optional onboarding/training"
-    ],
-    limits: {
-      users: "25+",
-      properties: "Unlimited",
-      reports: "Enterprise BI",
-      support: "Dedicated Account Manager",
-      sla: "Custom"
     }
   }
 ];
@@ -211,6 +159,7 @@ export default function Billing() {
     if (!subscriptionStatus || subscriptionStatus.status === 'no_subscription') {
       return null;
     }
+    // For now, default to Professional, but this could be enhanced to detect actual plan
     return subscriptionPlans.find(plan => plan.id === "professional") || subscriptionPlans[1];
   };
 
@@ -229,8 +178,8 @@ export default function Billing() {
   return (
     <div className="space-y-6" data-testid="billing-page">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Billing & Subscription</h1>
-        <p className="text-muted-foreground">
+        <h1 className="text-3xl font-bold tracking-tight text-black">Billing & Subscription</h1>
+        <p className="text-black">
           Manage your subscription and billing preferences
         </p>
       </div>
@@ -292,59 +241,93 @@ export default function Billing() {
         </TabsList>
 
         <TabsContent value="plans" className="space-y-6">
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-            {subscriptionPlans.map((plan) => {
-              const Icon = plan.icon;
-              const isCurrentPlan = hasActiveSubscription && plan.id === "professional";
-              const isAvailable = true; // All plans are now available
-              
-              return (
-                <Card key={plan.id} className={`relative ${plan.popular ? 'border-primary shadow-lg' : ''} ${isCurrentPlan ? 'ring-2 ring-primary' : ''}`} data-testid={`plan-card-${plan.id}`}>
-                  {plan.popular && (
-                    <Badge className="absolute -top-2 left-1/2 -translate-x-1/2">
-                      Most Popular
-                    </Badge>
-                  )}
-                  {isCurrentPlan && (
-                    <Badge className="absolute -top-2 left-1/2 -translate-x-1/2 bg-green-600">
-                      Current Plan
-                    </Badge>
-                  )}
-                  <CardHeader className="text-center">
-                    <div className="flex justify-center mb-4">
-                      <Icon className="h-12 w-12 text-primary" />
-                    </div>
-                    <CardTitle className="text-2xl">{plan.name}</CardTitle>
-                    <div className="text-3xl font-bold">
-                      {typeof plan.price === 'string' ? plan.price : `$${plan.price}`}
-                      {typeof plan.price !== 'string' && (
-                        <span className="text-sm font-normal text-muted-foreground">/month</span>
-                      )}
-                    </div>
-                    <CardDescription>{plan.description}</CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <ul className="space-y-2">
-                      {plan.features.map((feature, index) => (
-                        <li key={index} className="flex items-center gap-2">
-                          <CheckCircle className="h-4 w-4 text-green-500" />
-                          <span className="text-sm">{feature}</span>
-                        </li>
-                      ))}
-                    </ul>
-                    <Button 
-                      className="w-full" 
-                      variant={plan.popular ? "default" : "outline"}
-                      onClick={() => handleSubscribe(plan.id)}
-                      disabled={isCurrentPlan || !isAvailable}
-                      data-testid={`button-subscribe-${plan.id}`}
-                    >
-                      {isCurrentPlan ? "Current Plan" : isAvailable ? "Choose Plan" : "Coming Soon"}
-                    </Button>
-                  </CardContent>
-                </Card>
-              );
-            })}
+          <div className="max-w-5xl mx-auto">
+            <div className="grid gap-8 md:grid-cols-2">
+              {subscriptionPlans.map((plan) => {
+                const Icon = plan.icon;
+                const isCurrentPlan = hasActiveSubscription && plan.id === "professional";
+                const isAvailable = true; // All plans are now available
+                
+                return (
+                  <Card key={plan.id} className={`relative ${plan.popular ? 'border-purple-500 shadow-xl ring-2 ring-purple-500/20' : 'border-gray-200'} ${isCurrentPlan ? 'ring-2 ring-green-500' : ''}`} data-testid={`plan-card-${plan.id}`}>
+                    {/* Trial Badge */}
+                    {plan.badge && (
+                      <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+                        <Badge className="bg-purple-600 hover:bg-purple-700 text-white font-medium px-4 py-1">
+                          ✅ {plan.badge}
+                        </Badge>
+                      </div>
+                    )}
+                    
+                    {/* Popular Badge */}
+                    {plan.popular && (
+                      <div className="absolute -top-3 right-4">
+                        <Badge className="bg-orange-500 text-white font-medium">
+                          Most Popular
+                        </Badge>
+                      </div>
+                    )}
+                    
+                    {/* Current Plan Badge */}
+                    {isCurrentPlan && (
+                      <div className="absolute -top-3 right-4">
+                        <Badge className="bg-green-600 text-white font-medium">
+                          Current Plan
+                        </Badge>
+                      </div>
+                    )}
+                    
+                    <CardHeader className="text-center pb-4">
+                      <div className="flex justify-center mb-4">
+                        <Icon className={`h-12 w-12 ${plan.popular ? 'text-purple-600' : 'text-blue-600'}`} />
+                      </div>
+                      <CardTitle className="text-3xl font-bold text-gray-900">{plan.name}</CardTitle>
+                      <div className="text-4xl font-bold text-gray-900 mb-2">
+                        ${plan.price}
+                        <span className="text-lg font-normal text-gray-600">/month</span>
+                      </div>
+                      <CardDescription className="text-gray-600 text-base">{plan.description}</CardDescription>
+                    </CardHeader>
+                    
+                    <CardContent className="space-y-6">
+                      <ul className="space-y-3">
+                        {plan.features.map((feature, index) => (
+                          <li key={index} className="flex items-start gap-3">
+                            <CheckCircle className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0" />
+                            <span className="text-sm text-gray-700">{feature}</span>
+                          </li>
+                        ))}
+                      </ul>
+                      
+                      <Button 
+                        className={`w-full h-12 text-base font-semibold ${
+                          plan.popular 
+                            ? 'bg-purple-600 hover:bg-purple-700 text-white' 
+                            : 'bg-blue-600 hover:bg-blue-700 text-white'
+                        }`}
+                        onClick={() => handleSubscribe(plan.id)}
+                        disabled={isCurrentPlan || !isAvailable}
+                        data-testid={`button-subscribe-${plan.id}`}
+                      >
+                        {isCurrentPlan ? "Current Plan" : "Start Free Trial"}
+                      </Button>
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
+            
+            {/* Additional Info Section */}
+            <div className="mt-12 text-center space-y-4">
+              <div className="flex items-center justify-center gap-2 text-sm text-gray-600">
+                <Zap className="h-4 w-4 text-purple-600" />
+                <span>All plans include a free 1-week trial - no credit card required</span>
+              </div>
+              <div className="flex items-center justify-center gap-2 text-sm text-gray-600">
+                <CreditCard className="h-4 w-4 text-blue-600" />
+                <span>Cancel anytime • No setup fees • 30-day money-back guarantee</span>
+              </div>
+            </div>
           </div>
         </TabsContent>
 
@@ -352,11 +335,11 @@ export default function Billing() {
           <TabsContent value="current" className="space-y-6">
             <Card data-testid="current-subscription-card">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
+                <CardTitle className="flex items-center gap-2 text-black">
                   <Star className="h-5 w-5 text-primary" />
                   {currentPlan?.name || 'Professional'} Plan
                 </CardTitle>
-                <CardDescription>
+                <CardDescription className="text-black">
                   Your current subscription details
                 </CardDescription>
               </CardHeader>
@@ -371,26 +354,26 @@ export default function Billing() {
                 ) : (
                   <div className="grid gap-4 md:grid-cols-2">
                     <div>
-                      <div className="text-sm font-medium text-muted-foreground">Status</div>
+                      <div className="text-sm font-medium text-black">Status</div>
                       <Badge variant="default" className="mt-1" data-testid="subscription-status">
                         {subscriptionStatus?.status === 'active' ? 'Active' : subscriptionStatus?.status || 'Unknown'}
                       </Badge>
                     </div>
                     {subscriptionStatus?.current_period_end && (
                       <div>
-                        <div className="text-sm font-medium text-muted-foreground">Next Billing</div>
-                        <div className="mt-1" data-testid="next-billing-date">
+                        <div className="text-sm font-medium text-black">Next Billing</div>
+                        <div className="mt-1 text-black" data-testid="next-billing-date">
                           {new Date(subscriptionStatus.current_period_end * 1000).toLocaleDateString()}
                         </div>
                       </div>
                     )}
                     <div>
-                      <div className="text-sm font-medium text-muted-foreground">Monthly Cost</div>
-                      <div className="text-2xl font-bold mt-1" data-testid="monthly-cost">$69.00</div>
+                      <div className="text-sm font-medium text-black">Monthly Cost</div>
+                      <div className="text-2xl font-bold mt-1 text-black" data-testid="monthly-cost">$69.00</div>
                     </div>
                     <div>
-                      <div className="text-sm font-medium text-muted-foreground">Plan Benefits</div>
-                      <div className="mt-1">100 properties, Advanced CRM, Priority support</div>
+                      <div className="text-sm font-medium text-black">Plan Benefits</div>
+                      <div className="mt-1 text-black">100 properties, Advanced CRM, Priority support</div>
                     </div>
                   </div>
                 )}
@@ -426,8 +409,8 @@ export default function Billing() {
             <div className="grid gap-6 md:grid-cols-2">
               <Card data-testid="usage-users">
                 <CardHeader>
-                  <CardTitle>Users</CardTitle>
-                  <CardDescription>
+                  <CardTitle className="text-black">Users</CardTitle>
+                  <CardDescription className="text-black">
                     {currentUsage.users} of 3 users
                   </CardDescription>
                 </CardHeader>
@@ -436,7 +419,7 @@ export default function Billing() {
                     value={(currentUsage.users / 3) * 100} 
                     className="w-full"
                   />
-                  <div className="flex justify-between text-sm text-muted-foreground mt-2">
+                  <div className="flex justify-between text-sm text-black mt-2">
                     <span>Used: {currentUsage.users}</span>
                     <span>Limit: 3</span>
                   </div>
@@ -445,8 +428,8 @@ export default function Billing() {
 
               <Card data-testid="usage-properties">
                 <CardHeader>
-                  <CardTitle>Properties Usage</CardTitle>
-                  <CardDescription>
+                  <CardTitle className="text-black">Properties Usage</CardTitle>
+                  <CardDescription className="text-black">
                     {currentUsage.properties} of 100 properties used
                   </CardDescription>
                 </CardHeader>
@@ -455,7 +438,7 @@ export default function Billing() {
                     value={(currentUsage.properties / 100) * 100} 
                     className="w-full"
                   />
-                  <div className="flex justify-between text-sm text-muted-foreground mt-2">
+                  <div className="flex justify-between text-sm text-black mt-2">
                     <span>Used: {currentUsage.properties}</span>
                     <span>Limit: 100</span>
                   </div>
@@ -464,8 +447,8 @@ export default function Billing() {
 
               <Card data-testid="usage-transactions">
                 <CardHeader>
-                  <CardTitle>Transactions This Month</CardTitle>
-                  <CardDescription>
+                  <CardTitle className="text-black">Transactions This Month</CardTitle>
+                  <CardDescription className="text-black">
                     {currentUsage.transactions} of 50 transactions
                   </CardDescription>
                 </CardHeader>
@@ -474,7 +457,7 @@ export default function Billing() {
                     value={(currentUsage.transactions / 50) * 100} 
                     className="w-full"
                   />
-                  <div className="flex justify-between text-sm text-muted-foreground mt-2">
+                  <div className="flex justify-between text-sm text-black mt-2">
                     <span>Used: {currentUsage.transactions}</span>
                     <span>Limit: 50</span>
                   </div>
@@ -483,8 +466,8 @@ export default function Billing() {
 
               <Card data-testid="usage-storage">
                 <CardHeader>
-                  <CardTitle>Storage Usage</CardTitle>
-                  <CardDescription>
+                  <CardTitle className="text-black">Storage Usage</CardTitle>
+                  <CardDescription className="text-black">
                     {currentUsage.storageUsed} GB of 10 GB used
                   </CardDescription>
                 </CardHeader>
@@ -493,7 +476,7 @@ export default function Billing() {
                     value={(currentUsage.storageUsed / 10) * 100} 
                     className="w-full"
                   />
-                  <div className="flex justify-between text-sm text-muted-foreground mt-2">
+                  <div className="flex justify-between text-sm text-black mt-2">
                     <span>Used: {currentUsage.storageUsed} GB</span>
                     <span>Limit: 10 GB</span>
                   </div>
@@ -518,13 +501,13 @@ export default function Billing() {
                   <p className="text-muted-foreground">
                     Billing history will appear here after your first payment.
                   </p>
-                  <p className="text-sm text-muted-foreground mt-2">
+                  <p className="text-sm text-black mt-2">
                     You can also access detailed billing information through the Stripe customer portal.
                   </p>
                 </div>
               ) : (
                 <div className="text-center py-8">
-                  <p className="text-muted-foreground">
+                  <p className="text-black">
                     No billing history available. Subscribe to see your payment history.
                   </p>
                   <Button asChild className="mt-4" data-testid="button-subscribe-now">
@@ -545,8 +528,8 @@ export default function Billing() {
       {!hasActiveSubscription && (
         <Card className="border-primary bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-950/20 dark:to-purple-950/20" data-testid="subscription-cta">
           <CardHeader className="text-center">
-            <CardTitle className="text-2xl">Ready to unlock professional features?</CardTitle>
-            <CardDescription className="text-base">
+            <CardTitle className="text-2xl text-black">Ready to unlock professional features?</CardTitle>
+            <CardDescription className="text-base text-black">
               Join thousands of successful real estate agents using EliteKPI Professional
             </CardDescription>
           </CardHeader>
@@ -557,7 +540,7 @@ export default function Billing() {
                 Start Professional Subscription
               </Link>
             </Button>
-            <p className="text-sm text-muted-foreground mt-2">
+            <p className="text-sm text-black mt-2">
               $69/month • Cancel anytime • Full feature access
             </p>
           </CardContent>

@@ -248,7 +248,7 @@ export default function PropertyDetailsSheet({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-7xl w-[95vw] h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-4xl w-[85vw] h-[75vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <MapPin className="h-5 w-5" />
@@ -441,7 +441,19 @@ export default function PropertyDetailsSheet({
                             <AddressAutocomplete
                               value={field.value}
                               onChange={field.onChange}
-                              placeholder="Enter property address..."
+                              onAddressSelect={(addressComponents) => {
+                                // Auto-populate city, state, and zip code fields for backend
+                                if (addressComponents.city) {
+                                  form.setValue("city", addressComponents.city);
+                                }
+                                if (addressComponents.state) {
+                                  form.setValue("state", addressComponents.state);
+                                }
+                                if (addressComponents.zipCode) {
+                                  form.setValue("zipCode", addressComponents.zipCode);
+                                }
+                              }}
+                              placeholder="Enter full address..."
                               className="w-full"
                             />
                           </FormControl>
@@ -464,17 +476,16 @@ export default function PropertyDetailsSheet({
                     />
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  {/* Hidden fields for backend compatibility */}
+                  <div className="hidden">
                     <FormField
                       control={form.control}
                       name="city"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>City</FormLabel>
                           <FormControl>
                             <Input {...field} />
                           </FormControl>
-                          <FormMessage />
                         </FormItem>
                       )}
                     />
@@ -483,11 +494,9 @@ export default function PropertyDetailsSheet({
                       name="state"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>State</FormLabel>
                           <FormControl>
                             <Input {...field} maxLength={2} />
                           </FormControl>
-                          <FormMessage />
                         </FormItem>
                       )}
                     />
@@ -496,11 +505,9 @@ export default function PropertyDetailsSheet({
                       name="zipCode"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>ZIP Code</FormLabel>
                           <FormControl>
                             <Input {...field} />
                           </FormControl>
-                          <FormMessage />
                         </FormItem>
                       )}
                     />

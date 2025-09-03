@@ -27,7 +27,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
-import { insertTimeEntrySchema, type Property } from "@shared/schema";
+import { insertTimeEntrySchema, type Property, type User } from "@shared/schema";
 
 interface TimeEntryModalProps {
   isOpen: boolean;
@@ -41,6 +41,11 @@ export default function TimeEntryModal({ isOpen, onClose, propertyId }: TimeEntr
 
   const { data: properties = [] } = useQuery<Property[]>({
     queryKey: ["/api/properties"],
+    retry: false,
+  });
+
+  const { data: userSettings } = useQuery<User>({
+    queryKey: ["/api/user"],
     retry: false,
   });
 
@@ -79,9 +84,14 @@ export default function TimeEntryModal({ isOpen, onClose, propertyId }: TimeEntr
   });
 
   const onSubmit = (data: any) => {
+    const hours = parseFloat(data.hours);
+    const hourlyRate = userSettings?.hourlyRate ? parseFloat(userSettings.hourlyRate) : 0;
+    const amount = hours * hourlyRate;
+    
     const processedData = {
       ...data,
-      hours: parseFloat(data.hours),
+      hours,
+      amount,
       propertyId: data.propertyId === "general" ? null : data.propertyId,
     };
     createTimeEntryMutation.mutate(processedData);
@@ -115,10 +125,10 @@ export default function TimeEntryModal({ isOpen, onClose, propertyId }: TimeEntr
               name="activity"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Activity*</FormLabel>
+                  <FormLabel className="text-black">Activity*</FormLabel>
                   <Select onValueChange={field.onChange} value={field.value}>
                     <FormControl>
-                      <SelectTrigger>
+                      <SelectTrigger className="border-2 border-gray-300 focus:border-blue-500 text-black">
                         <SelectValue placeholder="Select an activity" />
                       </SelectTrigger>
                     </FormControl>
@@ -141,9 +151,15 @@ export default function TimeEntryModal({ isOpen, onClose, propertyId }: TimeEntr
                 name="hours"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Hours*</FormLabel>
+                    <FormLabel className="text-black">Hours*</FormLabel>
                     <FormControl>
-                      <Input type="number" step="0.25" placeholder="1.5" {...field} />
+                      <Input 
+                        type="number" 
+                        step="0.25" 
+                        placeholder="1.5" 
+                        className="border-2 border-gray-300 focus:border-blue-500 text-black"
+                        {...field} 
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -155,9 +171,13 @@ export default function TimeEntryModal({ isOpen, onClose, propertyId }: TimeEntr
                 name="date"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Date*</FormLabel>
+                    <FormLabel className="text-black">Date*</FormLabel>
                     <FormControl>
-                      <Input type="date" {...field} />
+                      <Input 
+                        type="date" 
+                        className="border-2 border-gray-300 focus:border-blue-500 text-black"
+                        {...field} 
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -165,15 +185,27 @@ export default function TimeEntryModal({ isOpen, onClose, propertyId }: TimeEntr
               />
             </div>
 
+            {/* ROI Calculation Display */}
+            {form.watch("hours") && userSettings?.hourlyRate && (
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                <div className="text-sm text-black">
+                  <strong>Calculated Value:</strong> ${(parseFloat(form.watch("hours") || "0") * parseFloat(userSettings.hourlyRate)).toFixed(2)}
+                  <span className="text-gray-600 ml-2">
+                    ({form.watch("hours")} hrs × ${userSettings.hourlyRate}/hr)
+                  </span>
+                </div>
+              </div>
+            )}
+
             <FormField
               control={form.control}
               name="propertyId"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Property (Optional)</FormLabel>
+                  <FormLabel className="text-black">Property (Optional)</FormLabel>
                   <Select onValueChange={field.onChange} value={field.value || "general"}>
                     <FormControl>
-                      <SelectTrigger>
+                      <SelectTrigger className="border-2 border-gray-300 focus:border-blue-500 text-black">
                         <SelectValue placeholder="Select a property" />
                       </SelectTrigger>
                     </FormControl>
@@ -196,9 +228,13 @@ export default function TimeEntryModal({ isOpen, onClose, propertyId }: TimeEntr
               name="description"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Description</FormLabel>
+                  <FormLabel className="text-black">Description</FormLabel>
                   <FormControl>
-                    <Textarea placeholder="Additional details about the activity..." {...field} />
+                    <Textarea 
+                      placeholder="Additional details about the activity..." 
+                      className="border-2 border-gray-300 focus:border-blue-500 text-black resize-none"
+                      {...field} 
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

@@ -429,6 +429,7 @@ export default function MarketTiming() {
   const demographics = demographicsData || getDemographicsData(effectiveLocation);
   const marketClimate = marketClimateData || getMarketClimate(effectiveLocation);
   const seasonalTrends = seasonalTrendsData?.seasonalTrends || getSeasonalTrends(effectiveLocation);
+  const inventoryLevels = inventoryLevelsData?.inventoryTrends || seasonalTrends; // Use inventory data if available, fallback to seasonal trends
   const priceAppreciationData = priceAnalysisData?.historicalTrends || [
     { year: '2020', appreciation: 8.2 },
     { year: '2021', appreciation: 12.7 },
@@ -460,12 +461,12 @@ export default function MarketTiming() {
 
   return (
     <TooltipProvider>
-      <div className="p-6 space-y-6">
+      <div className="p-6 space-y-6 text-black">
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold">Market Timing Intelligence</h1>
-          <p className="text-muted-foreground mt-1">
+          <h1 className="text-3xl font-bold text-black">Market Timing Intelligence</h1>
+          <p className="text-gray-600 mt-1">
             Optimize your listing strategy with data-driven market insights
           </p>
         </div>
@@ -516,23 +517,23 @@ export default function MarketTiming() {
           <CardHeader>
             <div className="flex items-center space-x-2">
               <MapPin className="h-5 w-5 text-blue-600" />
-              <CardTitle className="text-lg">Zipcode Market Data</CardTitle>
+              <CardTitle className="text-lg text-black">Zipcode Market Data</CardTitle>
               <Badge className="bg-blue-100 text-blue-800">Real Data</Badge>
               <UITooltip>
                 <TooltipTrigger>
-                  <Info className="h-4 w-4 text-muted-foreground hover:text-blue-600 cursor-help" />
+                  <Info className="h-4 w-4 text-gray-600 hover:text-blue-600 cursor-help" />
                 </TooltipTrigger>
                 <TooltipContent>
-                  <p>Data sourced from Redfin API and NH property records</p>
+                  <p className="text-black">Data sourced from Redfin API and NH property records</p>
                 </TooltipContent>
               </UITooltip>
             </div>
           </CardHeader>
           <CardContent>
-            <p className="text-lg font-medium">
+            <p className="text-lg font-medium text-black">
               Showing market data for {zipcodeLookupData.city}, {zipcodeLookupData.county} County, {zipcodeLookupData.state} (Zipcode: {zipcodeLookupData.zipcode})
             </p>
-            <p className="text-sm text-muted-foreground mt-1">
+            <p className="text-sm text-gray-600 mt-1">
               This data includes {zipcodeLookupData.city}, {zipcodeLookupData.state}-specific market metrics and pricing information.
             </p>
           </CardContent>
@@ -552,7 +553,7 @@ export default function MarketTiming() {
             {seasonRecommendation.status === 'good' && <TrendingUp className="h-5 w-5 text-blue-600" />}
             {seasonRecommendation.status === 'moderate' && <Clock className="h-5 w-5 text-blue-600" />}
             {seasonRecommendation.status === 'difficult' && <AlertCircle className="h-5 w-5 text-red-600" />}
-            <CardTitle className="text-lg">
+            <CardTitle className="text-lg text-black">
               {seasonRecommendation.season} Market Outlook
             </CardTitle>
             <Badge className={
@@ -566,7 +567,7 @@ export default function MarketTiming() {
           </div>
         </CardHeader>
         <CardContent>
-          <p className="text-lg font-medium">
+          <p className="text-lg font-medium text-black">
             {seasonRecommendation.message}
           </p>
         </CardContent>
@@ -580,17 +581,17 @@ export default function MarketTiming() {
               <CardTitle className="text-sm font-medium">Avg Days on Market</CardTitle>
               <UITooltip>
                 <TooltipTrigger>
-                  <Info className="h-3 w-3 text-muted-foreground hover:text-blue-600 cursor-help" />
+                  <Info className="h-3 w-3 text-gray-600 hover:text-blue-600 cursor-help" />
                 </TooltipTrigger>
                 <TooltipContent>
                   <p>Live data from Redfin market insights</p>
                 </TooltipContent>
               </UITooltip>
             </div>
-            <Calendar className="h-4 w-4 text-muted-foreground" />
+            <Calendar className="h-4 w-4 text-gray-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
+            <div className="text-2xl font-bold text-black">
               {timingIntelligence?.averageDaysOnMarket?.actual ? 
                 `${timingIntelligence.averageDaysOnMarket.actual} days` : 
                 currentMarketData?.daysOnMarket ? 
@@ -598,7 +599,7 @@ export default function MarketTiming() {
                 (selectedLocation === 'Manchester, NH' ? '9 days' : '30 days')
               }
             </div>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-xs text-gray-600">
               <span className="text-green-600">
                 {(() => {
                   const days = timingIntelligence?.averageDaysOnMarket?.actual || currentMarketData?.daysOnMarket;
@@ -618,17 +619,17 @@ export default function MarketTiming() {
               <CardTitle className="text-sm font-medium">Price Appreciation</CardTitle>
               <UITooltip>
                 <TooltipTrigger>
-                  <Info className="h-3 w-3 text-muted-foreground hover:text-blue-600 cursor-help" />
+                  <Info className="h-3 w-3 text-gray-600 hover:text-blue-600 cursor-help" />
                 </TooltipTrigger>
                 <TooltipContent>
                   <p>Year-over-year price change from Redfin sales data</p>
                 </TooltipContent>
               </UITooltip>
             </div>
-            <TrendingUp className="h-4 w-4 text-muted-foreground" />
+            <TrendingUp className="h-4 w-4 text-gray-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
+            <div className="text-2xl font-bold text-black">
               {timingIntelligence?.priceAppreciation?.yearly ? 
                 `+${timingIntelligence.priceAppreciation.yearly.toFixed(1)}%` : 
                 currentMarketData?.priceChange ? 
@@ -636,7 +637,7 @@ export default function MarketTiming() {
                 (selectedLocation === 'Manchester, NH' ? '+12.9%' : '+2.7%')
               }
             </div>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-xs text-gray-600">
               {(() => {
                 const appreciation = timingIntelligence?.priceAppreciation?.yearly || currentMarketData?.priceChange;
                 if (appreciation) {
@@ -654,17 +655,17 @@ export default function MarketTiming() {
               <CardTitle className="text-sm font-medium">Market Inventory</CardTitle>
               <UITooltip>
                 <TooltipTrigger>
-                  <Info className="h-3 w-3 text-muted-foreground hover:text-blue-600 cursor-help" />
+                  <Info className="h-3 w-3 text-gray-600 hover:text-blue-600 cursor-help" />
                 </TooltipTrigger>
                 <TooltipContent>
                   <p>Months of supply based on current inventory & sales pace</p>
                 </TooltipContent>
               </UITooltip>
             </div>
-            <Target className="h-4 w-4 text-muted-foreground" />
+            <Target className="h-4 w-4 text-gray-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
+            <div className="text-2xl font-bold text-black">
               {timingIntelligence?.marketConditions?.inventoryMonths ? 
                 `${timingIntelligence.marketConditions.inventoryMonths.toFixed(1)} months` : 
                 currentMarketData?.inventory ? 
@@ -672,7 +673,7 @@ export default function MarketTiming() {
                 (selectedLocation === 'Manchester, NH' ? '1.7 months' : '2.3 months')
               }
             </div>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-xs text-gray-600">
               {(() => {
                 const inventory = timingIntelligence?.marketConditions?.inventoryMonths || currentMarketData?.inventory;
                 if (inventory) {
@@ -690,14 +691,14 @@ export default function MarketTiming() {
               <CardTitle className="text-sm font-medium">Competition Level</CardTitle>
               <UITooltip>
                 <TooltipTrigger>
-                  <Info className="h-3 w-3 text-muted-foreground hover:text-blue-600 cursor-help" />
+                  <Info className="h-3 w-3 text-gray-600 hover:text-blue-600 cursor-help" />
                 </TooltipTrigger>
                 <TooltipContent>
                   <p>Competition score based on days on market & sale-to-list ratio</p>
                 </TooltipContent>
               </UITooltip>
             </div>
-            <MapPin className="h-4 w-4 text-muted-foreground" />
+            <MapPin className="h-4 w-4 text-gray-600" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-red-600">
@@ -708,7 +709,7 @@ export default function MarketTiming() {
                 (selectedLocation === 'Manchester, NH' ? 'Extreme' : 'High')
               }
             </div>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-xs text-gray-600">
               {(() => {
                 const level = timingIntelligence?.marketConditions?.competitionLevel;
                 if (level) {
@@ -722,7 +723,7 @@ export default function MarketTiming() {
       </div>
 
       {/* Charts and Analysis */}
-      <Tabs defaultValue="seasonal" className="space-y-4">
+      <Tabs key={zipcodeLookupData?.zipcode || selectedLocation} defaultValue="seasonal" className="space-y-4">
         <TabsList className="grid w-full grid-cols-7">
           <TabsTrigger value="seasonal">Seasonal Trends</TabsTrigger>
           <TabsTrigger value="pricing">Price Analysis</TabsTrigger>
@@ -741,7 +742,7 @@ export default function MarketTiming() {
                   <CardTitle>Average Days on Market by Month</CardTitle>
                   <UITooltip>
                     <TooltipTrigger>
-                      <Info className="h-4 w-4 text-muted-foreground hover:text-blue-600 cursor-help" />
+                      <Info className="h-4 w-4 text-gray-600 hover:text-blue-600 cursor-help" />
                     </TooltipTrigger>
                     <TooltipContent>
                       <p>Historical data from Redfin market trends</p>
@@ -780,7 +781,7 @@ export default function MarketTiming() {
                   <CardTitle>Sales Volume by Month</CardTitle>
                   <UITooltip>
                     <TooltipTrigger>
-                      <Info className="h-4 w-4 text-muted-foreground hover:text-blue-600 cursor-help" />
+                      <Info className="h-4 w-4 text-gray-600 hover:text-blue-600 cursor-help" />
                     </TooltipTrigger>
                     <TooltipContent>
                       <p>Transaction volume data from local MLS records</p>
@@ -814,7 +815,7 @@ export default function MarketTiming() {
                 <CardTitle>Best & Worst Listing Months</CardTitle>
                 <UITooltip>
                   <TooltipTrigger>
-                    <Info className="h-4 w-4 text-muted-foreground hover:text-blue-600 cursor-help" />
+                    <Info className="h-4 w-4 text-gray-600 hover:text-blue-600 cursor-help" />
                   </TooltipTrigger>
                   <TooltipContent>
                     <p>Based on historical sales data and seasonal market patterns</p>
@@ -928,7 +929,7 @@ export default function MarketTiming() {
                 <CardDescription>
                   Current market balance in {displayLocation}
                   {marketConditionsData?.marketData && (
-                    <div className="text-xs text-muted-foreground mt-2">
+                    <div className="text-xs text-gray-600 mt-2">
                       <span className="font-medium">Market Condition:</span> {marketConditionsData.marketData.condition.replace(/_/g, ' ').toUpperCase()}<br/>
                       <span className="font-medium">Avg Days on Market:</span> {marketConditionsData.marketData.daysOnMarket} days<br/>
                       <span className="font-medium">Competition Level:</span> {marketConditionsData.marketData.competition.toUpperCase()}
@@ -999,45 +1000,45 @@ export default function MarketTiming() {
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <div className="flex justify-between">
-                      <span className="text-sm text-muted-foreground">Population</span>
+                      <span className="text-sm text-gray-600">Population</span>
                       <span className="font-medium">{demographics.population.toLocaleString()}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-sm text-muted-foreground">Median Age</span>
+                      <span className="text-sm text-gray-600">Median Age</span>
                       <span className="font-medium">{demographics.medianAge} years</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-sm text-muted-foreground">Median Income</span>
+                      <span className="text-sm text-gray-600">Median Income</span>
                       <span className="font-medium">${demographics.medianIncome.toLocaleString()}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-sm text-muted-foreground">Homeownership Rate</span>
+                      <span className="text-sm text-gray-600">Homeownership Rate</span>
                       <span className="font-medium">{demographics.homeOwnershipRate}%</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-sm text-muted-foreground">College Degree</span>
+                      <span className="text-sm text-gray-600">College Degree</span>
                       <span className="font-medium">{demographics.collegeDegreePercent}%</span>
                     </div>
                   </div>
                   <div className="space-y-2">
                     <div className="flex justify-between">
-                      <span className="text-sm text-muted-foreground">Unemployment</span>
+                      <span className="text-sm text-gray-600">Unemployment</span>
                       <span className="font-medium text-green-600">{demographics.unemploymentRate}%</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-sm text-muted-foreground">Population Growth</span>
+                      <span className="text-sm text-gray-600">Population Growth</span>
                       <span className="font-medium text-blue-600">+{demographics.populationGrowth}%</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-sm text-muted-foreground">MA Migration</span>
+                      <span className="text-sm text-gray-600">MA Migration</span>
                       <span className="font-medium text-gray-700">{demographics.migrationFromMA}%</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-sm text-muted-foreground">Rental Vacancy</span>
+                      <span className="text-sm text-gray-600">Rental Vacancy</span>
                       <span className="font-medium text-red-600">{demographics.rentalVacancyRate}%</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-sm text-muted-foreground">Cost of Living</span>
+                      <span className="text-sm text-gray-600">Cost of Living</span>
                       <span className="font-medium">{demographics.costOfLivingIndex}</span>
                     </div>
                   </div>
@@ -1103,51 +1104,51 @@ export default function MarketTiming() {
                 <div className="space-y-4">
                   <div className="p-4 rounded-lg bg-gray-50 border border-gray-200">
                     <h4 className="font-semibold text-lg">{marketClimate.marketType}</h4>
-                    <p className="text-sm text-muted-foreground mt-1">Market classification based on current conditions</p>
+                    <p className="text-sm text-gray-600 mt-1">Market classification based on current conditions</p>
                   </div>
                   
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <div className="flex justify-between">
-                        <span className="text-sm text-muted-foreground">Competitive Score</span>
+                        <span className="text-sm text-gray-600">Competitive Score</span>
                         <span className="font-medium text-red-600">{marketClimate.competitiveScore}/100</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-sm text-muted-foreground">Affordability Index</span>
+                        <span className="text-sm text-gray-600">Affordability Index</span>
                         <span className="font-medium text-gray-700">{marketClimate.affordabilityIndex}</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-sm text-muted-foreground">Inventory (Months)</span>
+                        <span className="text-sm text-gray-600">Inventory (Months)</span>
                         <span className="font-medium">{marketClimate.inventoryMonths}</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-sm text-muted-foreground">Above Asking %</span>
+                        <span className="text-sm text-gray-600">Above Asking %</span>
                         <span className="font-medium text-green-600">{marketClimate.aboveAskingPercent}%</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-sm text-muted-foreground">Avg Days on Market</span>
+                        <span className="text-sm text-gray-600">Avg Days on Market</span>
                         <span className="font-medium">{marketClimate.averageDaysOnMarket} days</span>
                       </div>
                     </div>
                     <div className="space-y-2">
                       <div className="flex justify-between">
-                        <span className="text-sm text-muted-foreground">Price Drops %</span>
+                        <span className="text-sm text-gray-600">Price Drops %</span>
                         <span className="font-medium">{marketClimate.priceDropPercent}%</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-sm text-muted-foreground">Sale-to-List Ratio</span>
+                        <span className="text-sm text-gray-600">Sale-to-List Ratio</span>
                         <span className="font-medium">{marketClimate.saleToListRatio}%</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-sm text-muted-foreground">Mortgage Rates</span>
+                        <span className="text-sm text-gray-600">Mortgage Rates</span>
                         <span className="font-medium">{marketClimate.mortgageRates}%</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-sm text-muted-foreground">New Listings YoY</span>
+                        <span className="text-sm text-gray-600">New Listings YoY</span>
                         <span className="font-medium text-blue-600">+{marketClimate.newListingsYoY}%</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-sm text-muted-foreground">Price Growth YoY</span>
+                        <span className="text-sm text-gray-600">Price Growth YoY</span>
                         <span className="font-medium text-green-600">+{marketClimate.priceAppreciationYoY}%</span>
                       </div>
                     </div>
@@ -1171,7 +1172,7 @@ export default function MarketTiming() {
                       <Home className="h-4 w-4 text-blue-600" />
                       <span>Buyer Conditions</span>
                     </h4>
-                    <p className="text-sm text-muted-foreground mt-1">{marketClimate.conditions.buyers}</p>
+                    <p className="text-sm text-gray-600 mt-1">{marketClimate.conditions.buyers}</p>
                   </div>
                   
                   <div className="p-4 rounded-lg border">
@@ -1179,7 +1180,7 @@ export default function MarketTiming() {
                       <DollarSign className="h-4 w-4 text-green-600" />
                       <span>Seller Conditions</span>
                     </h4>
-                    <p className="text-sm text-muted-foreground mt-1">{marketClimate.conditions.sellers}</p>
+                    <p className="text-sm text-gray-600 mt-1">{marketClimate.conditions.sellers}</p>
                   </div>
                   
                   <div className="p-4 rounded-lg border">
@@ -1187,7 +1188,7 @@ export default function MarketTiming() {
                       <BarChart3 className="h-4 w-4 text-purple-600" />
                       <span>Investor Conditions</span>
                     </h4>
-                    <p className="text-sm text-muted-foreground mt-1">{marketClimate.conditions.investors}</p>
+                    <p className="text-sm text-gray-600 mt-1">{marketClimate.conditions.investors}</p>
                   </div>
                 </div>
               </CardContent>
@@ -1205,14 +1206,14 @@ export default function MarketTiming() {
                     <Sparkles className="h-6 w-6 text-purple-600 dark:text-purple-300" />
                   </div>
                   <div>
-                    <CardTitle className="text-xl">AI-Powered Listing & Marketing Strategies</CardTitle>
+                    <CardTitle className="text-xl text-black">AI-Powered Listing & Marketing Strategies</CardTitle>
                     <CardDescription className="mt-1">
                       Get personalized recommendations based on current market conditions in {effectiveLocation}
                     </CardDescription>
                   </div>
                   <UITooltip>
                     <TooltipTrigger>
-                      <Info className="h-4 w-4 text-muted-foreground hover:text-purple-600 cursor-help" />
+                      <Info className="h-4 w-4 text-gray-600 hover:text-purple-600 cursor-help" />
                     </TooltipTrigger>
                     <TooltipContent>
                       <p>Strategies generated by AI using live market data and pricing trends</p>
@@ -1246,7 +1247,7 @@ export default function MarketTiming() {
                     <Target className="h-4 w-4 text-green-600" />
                     <span className="font-medium text-sm">Market Summary</span>
                   </div>
-                  <p className="text-sm text-muted-foreground">{aiStrategiesData.marketSummary}</p>
+                  <p className="text-sm text-gray-600">{aiStrategiesData.marketSummary}</p>
                 </div>
               </CardContent>
             )}
@@ -1279,7 +1280,7 @@ export default function MarketTiming() {
                           </Badge>
                         </div>
                         <p className="text-sm text-blue-700 dark:text-blue-300">{strategy.strategy}</p>
-                        <p className="text-xs text-muted-foreground">{strategy.reasoning}</p>
+                        <p className="text-xs text-gray-600">{strategy.reasoning}</p>
                       </div>
                     ))}
                   </div>
@@ -1310,7 +1311,7 @@ export default function MarketTiming() {
                           </Badge>
                         </div>
                         <p className="text-sm text-green-700 dark:text-green-300">{strategy.strategy}</p>
-                        <p className="text-xs text-muted-foreground">{strategy.reasoning}</p>
+                        <p className="text-xs text-gray-600">{strategy.reasoning}</p>
                       </div>
                     ))}
                   </div>
@@ -1326,7 +1327,7 @@ export default function MarketTiming() {
                   </div>
                   <div className="space-y-2">
                     <h3 className="font-medium">Ready to Generate AI Strategies</h3>
-                    <p className="text-sm text-muted-foreground max-w-md">
+                    <p className="text-sm text-gray-600 max-w-md">
                       Click the "Generate AI Strategies" button above to get personalized listing and marketing recommendations.
                     </p>
                   </div>
@@ -1382,26 +1383,26 @@ export default function MarketTiming() {
                     <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mt-6">
                       <div className="text-center p-3 border rounded-lg">
                         <div className="text-2xl font-bold text-blue-600">{(timingIntelligence as any)?.localData?.totalProperties}</div>
-                        <div className="text-sm text-muted-foreground">Total Properties</div>
+                        <div className="text-sm text-gray-600">Total Properties</div>
                       </div>
                       <div className="text-center p-3 border rounded-lg">
                         <div className="text-2xl font-bold text-green-600">
                           ${(timingIntelligence as any)?.localData?.avgSoldPrice?.toLocaleString() || 'N/A'}
                         </div>
-                        <div className="text-sm text-muted-foreground">Avg Sold Price</div>
+                        <div className="text-sm text-gray-600">Avg Sold Price</div>
                       </div>
                       <div className="text-center p-3 border rounded-lg">
                         <div className="text-2xl font-bold text-purple-600">
                           {(timingIntelligence as any)?.averageDaysOnMarket?.actual || 'N/A'}
                         </div>
-                        <div className="text-sm text-muted-foreground">Days on Market</div>
+                        <div className="text-sm text-gray-600">Days on Market</div>
                       </div>
                       <div className="text-center p-3 border rounded-lg">
                         <div className="text-2xl font-bold text-gray-700">
                           {(timingIntelligence as any)?.marketConditions?.averageSaleToListRatio ? 
                             `${((timingIntelligence as any)?.marketConditions?.averageSaleToListRatio * 100).toFixed(1)}%` : 'N/A'}
                         </div>
-                        <div className="text-sm text-muted-foreground">Sale-to-List Ratio</div>
+                        <div className="text-sm text-gray-600">Sale-to-List Ratio</div>
                       </div>
                     </div>
                   )}
@@ -1418,7 +1419,7 @@ export default function MarketTiming() {
                               <div key={index} className="p-3 border rounded-lg text-sm">
                                 <div className="font-medium">{sale.address}</div>
                                 <div className="text-green-600">Sold: ${sale.soldPrice?.toLocaleString()}</div>
-                                <div className="text-muted-foreground">
+                                <div className="text-gray-600">
                                   {sale.saleToListRatio > 1 ? 
                                     `${((sale.saleToListRatio - 1) * 100).toFixed(1)}% above asking` :
                                     `${((1 - sale.saleToListRatio) * 100).toFixed(1)}% below asking`
@@ -1439,7 +1440,7 @@ export default function MarketTiming() {
                               <div key={index} className="p-3 border rounded-lg text-sm">
                                 <div className="font-medium">{listing.address}</div>
                                 <div className="text-blue-600">Listed: ${listing.listingPrice?.toLocaleString()}</div>
-                                <div className="text-muted-foreground">{listing.daysOnMarket} days on market</div>
+                                <div className="text-gray-600">{listing.daysOnMarket} days on market</div>
                               </div>
                             ))}
                           </div>

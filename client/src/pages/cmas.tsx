@@ -179,7 +179,7 @@ export default function Cmas() {
   const didNotConvert = cmas.filter((c) => c.status === 'did_not_convert').length;
 
   return (
-    <div className="flex-1 overflow-y-auto p-4 md:p-6">
+    <div className="flex-1 overflow-y-auto p-4 md:p-6 bg-white min-h-full">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold text-gray-900">CMAs</h1>
         <Button onClick={() => setIsAddModalOpen(true)} className="bg-blue-600 hover:bg-blue-700 text-white">
@@ -266,13 +266,13 @@ export default function Cmas() {
                   {cma.lowEstimate && (
                     <div>
                       <p className="text-sm text-gray-500">Low Estimate</p>
-                      <p className="font-medium">{formatCurrency(parseFloat(cma.lowEstimate))}</p>
+                      <p className="font-medium text-black">{formatCurrency(parseFloat(cma.lowEstimate))}</p>
                     </div>
                   )}
                   {cma.highEstimate && (
                     <div>
                       <p className="text-sm text-gray-500">High Estimate</p>
-                      <p className="font-medium">{formatCurrency(parseFloat(cma.highEstimate))}</p>
+                      <p className="font-medium text-black">{formatCurrency(parseFloat(cma.highEstimate))}</p>
                     </div>
                   )}
                   {cma.suggestedListPrice && (
@@ -300,13 +300,6 @@ export default function Cmas() {
                   <div className="mb-4">
                     <p className="text-sm text-gray-500 mb-1">Notes</p>
                     <p className="text-gray-900">{cma.notes}</p>
-                  </div>
-                )}
-
-                {cma.comparables && (
-                  <div className="mb-4">
-                    <p className="text-sm text-gray-500 mb-1">Comparables</p>
-                    <p className="text-gray-700 text-sm">{cma.comparables}</p>
                   </div>
                 )}
 

@@ -2,6 +2,23 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Gradient background styling */
+html {
+    height: 100%;
+}
+
+body {
+    background: #ffffff;
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+}
+
+#root {
+    background: transparent;
+    min-height: 100vh;
+}
+
 /* Webkit autofill styling */
 input:-webkit-autofill,
 input:-webkit-autofill:hover,
@@ -10,6 +27,44 @@ input:-webkit-autofill:active {
     -webkit-box-shadow: 0 0 0 30px white inset !important;
     box-shadow: 0 0 0 30px white inset !important;
     -webkit-text-fill-color: black !important;
+}
+
+/* Google Maps Autocomplete styling fixes */
+.pac-container {
+    background-color: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 0.375rem;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    z-index: 9999;
+}
+
+.pac-item {
+    padding: 8px 12px;
+    border-bottom: 1px solid #f3f4f6;
+    cursor: pointer;
+    color: #374151;
+}
+
+.pac-item:hover {
+    background-color: #f9fafb;
+}
+
+.pac-item-selected {
+    background-color: #eff6ff;
+}
+
+/* Prevent Google Maps from graying out input fields */
+input[type="text"].gm-style input {
+    color: black !important;
+    background-color: white !important;
+    opacity: 1 !important;
+}
+
+/* Ensure address input maintains proper styling during autocomplete */
+.pac-target-input {
+    color: black !important;
+    background-color: white !important;
+    opacity: 1 !important;
 }
 
 /* iPhone 16 Pro optimizations */
@@ -479,5 +534,110 @@ html.dark {
 /* Tabular numbers utility */
 .tabular-nums {
   font-variant-numeric: tabular-nums;
+}
+
+/* --- MODERN DASHBOARD TILE COLOR SCHEME --- */
+/* PROMPT FOR AI:
+Generate CSS for modern, light dashboard tiles with multiple gradient options, using a color palette entirely free of gray tones.
+
+    The base tile (.dashboard-tile) should have a subtle white-to-light-blue gradient, a soft blue shadow, and professional blue text.
+
+    Create three distinct, named gradient themes for the main numeric value (.tile-value) and the icon background (.tile-icon-wrapper).
+
+        A violet theme (.gradient-text-violet, .icon-bg-violet)
+
+        A teal theme (.gradient-text-teal, .icon-bg-teal)
+
+        An orange theme (.gradient-text-orange, .icon-bg-orange)
+        */
+
+/* --- General Tile Structure --- */
+.dashboard-tile {
+  background-image: linear-gradient(135deg, #ffffff 0%, #f0f7ff 100%); /* White to very light blue */
+  border-radius: 0.75rem; /* 12px */
+  padding: 1.5rem; /* 24px */
+  box-shadow: 0 4px 8px -2px rgba(135, 206, 235, 0.2), 0 2px 4px -2px rgba(135, 206, 235, 0.15); /* Soft blue shadow */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  border: 1px solid #e0e7ff; /* Light indigo border */
+  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+.dashboard-tile:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 20px -5px rgba(135, 206, 235, 0.25), 0 4px 8px -4px rgba(135, 206, 235, 0.2); /* Enhanced blue shadow */
+}
+
+/* --- Base Text Styles --- */
+.dashboard-tile h3, .dashboard-tile p, .dashboard-tile span {
+  color: #000000; /* Black text for better visibility */
+}
+
+.tile-title {
+  font-size: 1rem; /* 16px */
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  color: #000000; /* Black text for better visibility */
+}
+
+.tile-value {
+  font-size: 2.5rem; /* 40px */
+  font-weight: 700;
+  margin-bottom: 0.25rem;
+  line-height: 1.1;
+  color: #000000; /* Black text for better visibility */
+}
+
+.tile-description {
+  font-size: 0.875rem; /* 14px */
+  color: #000000; /* Black text for better visibility */
+  margin-bottom: 1rem;
+}
+
+/* --- Base Icon Styles --- */
+.tile-icon-wrapper {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.75rem; /* 12px */
+  border-radius: 9999px; /* Circle */
+  margin-bottom: 1rem;
+}
+
+/* --- GRADIENT THEME OPTIONS --- */
+/* To use a theme, apply the matching icon-bg and gradient-text classes to your tile elements. */
+
+/* Theme 1: Violet */
+.icon-bg-violet {
+  background-color: #f5f3ff; /* Light violet */
+}
+.gradient-text-violet {
+  background-image: linear-gradient(45deg, #8b5cf6, #3b82f6);
+  -webkit-background-clip: text;
+  -moz-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* Theme 2: Teal */
+.icon-bg-teal {
+  background-color: #f0fdfa; /* Light teal */
+}
+.gradient-text-teal {
+  background-image: linear-gradient(45deg, #14b8a6, #22c55e);
+  -webkit-background-clip: text;
+  -moz-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* Theme 3: Black */
+.icon-bg-orange {
+  background-color: #f9fafb; /* Light gray background */
+}
+.gradient-text-orange {
+  color: #000000; /* Pure black text */
 }
 

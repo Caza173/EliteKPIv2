@@ -18,7 +18,8 @@ export function useTaskReminders(): TaskReminderHookResult {
   // Query to get tasks
   const { data: tasks } = useQuery<SmartTask[]>({
     queryKey: ['/api/tasks'],
-    refetchInterval: 30 * 1000, // Check every 30 seconds for due tasks
+    // Removed automatic polling to prevent authentication loops
+    // refetchInterval: 30 * 1000, // Check every 30 seconds for due tasks
   });
 
   // Check for due tasks

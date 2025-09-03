@@ -15,8 +15,9 @@ import {
   FormMessage,
   FormDescription,
 } from "@/components/ui/form";
-import { Settings, DollarSign, Car, Clock, Percent, Save, Database, Globe, CheckCircle, AlertCircle } from "lucide-react";
+import { Settings, DollarSign, Car, Clock, Percent, Save, Database, Globe, CheckCircle, AlertCircle, Shield } from "lucide-react";
 import { MLSSettingsSection } from "@/components/mls-settings";
+import ChangePasswordForm from "@/components/auth/change-password-form";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { isUnauthorizedError } from "@/lib/authUtils";
@@ -61,7 +62,8 @@ export default function UserSettings() {
   // Fetch data sources status
   const { data: dataSourcesStatus } = useQuery({
     queryKey: ["/api/data-sources/status"],
-    refetchInterval: 30000, // Refresh every 30 seconds
+    // Removed automatic polling to prevent authentication loops
+    // refetchInterval: 30000, // Refresh every 30 seconds
     retry: false,
   });
 
@@ -285,8 +287,23 @@ export default function UserSettings() {
                   <Input value={user?.email || "Not provided"} disabled />
                 </div>
                 <p className="text-sm text-gray-500">
-                  Account information is managed through your Replit profile
+                  Account information is managed through your profile settings
                 </p>
+              </CardContent>
+            </Card>
+
+            {/* Security Settings */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Shield className="h-5 w-5" />
+                  Security Settings
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="max-w-md mx-auto">
+                  <ChangePasswordForm />
+                </div>
               </CardContent>
             </Card>
 

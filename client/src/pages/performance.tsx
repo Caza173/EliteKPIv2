@@ -21,6 +21,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { isUnauthorizedError } from "@/lib/authUtils";
 import { formatCurrency, formatPercentage, calculateConversionRate } from "@/lib/calculations";
+import { FeatureGate, useHasFeature } from "@/hooks/usePlanInfo";
 import {
   ResponsiveContainer,
   LineChart,
@@ -213,7 +214,7 @@ export default function Performance() {
   }
 
   return (
-    <div className="flex-1 overflow-y-auto p-3 md:p-4 space-y-4 max-w-7xl mx-auto">
+    <div className="flex-1 overflow-y-auto p-3 md:p-4 space-y-4 max-w-7xl mx-auto bg-white min-h-full">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -415,15 +416,16 @@ export default function Performance() {
       </Card>
 
       {/* Buyer and Seller Conversion Metrics */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Buyer Conversion Metrics */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <FileText className="h-5 w-5 text-blue-600" />
-              Buyer Conversion Metrics
-            </CardTitle>
-          </CardHeader>
+      <FeatureGate feature="performanceAnalytics">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Buyer Conversion Metrics */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <FileText className="h-5 w-5 text-blue-600" />
+                Buyer Conversion Metrics
+              </CardTitle>
+            </CardHeader>
           <CardContent>
             <div className="flex justify-center gap-8 mb-4">
               <div className="text-center">
@@ -533,6 +535,7 @@ export default function Performance() {
           </CardContent>
         </Card>
       </div>
+      </FeatureGate>
 
       {/* Key Performance Indicators */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -546,7 +549,7 @@ export default function Performance() {
               {callAnswerRate.toFixed(1)}%
             </div>
             <Progress value={callAnswerRate} className="mt-2" />
-            <p className="text-xs text-gray-600 mt-2">
+            <p className="text-xs text-black mt-2">
               {answeredCalls.length} answered of {callActivities.length} calls
             </p>
           </CardContent>
@@ -562,7 +565,7 @@ export default function Performance() {
               {appointmentConversionRate.toFixed(1)}%
             </div>
             <Progress value={appointmentConversionRate} className="mt-2" />
-            <p className="text-xs text-gray-600 mt-2">
+            <p className="text-xs text-black mt-2">
               {agreements.length} agreements from {appointments.length} appointments
             </p>
           </CardContent>
@@ -657,13 +660,14 @@ export default function Performance() {
 
       {/* Property ROI Analysis with Expandable Details */}
       {propertyROI.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Award className="h-5 w-5" />
-              Property ROI Analysis
-            </CardTitle>
-          </CardHeader>
+        <FeatureGate feature="comprehensivePropertyPipeline">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Award className="h-5 w-5" />
+                Property ROI Analysis
+              </CardTitle>
+            </CardHeader>
           <CardContent>
             <div className="mb-6">
               <ResponsiveContainer width="100%" height={200}>
@@ -778,6 +782,7 @@ export default function Performance() {
             </div>
           </CardContent>
         </Card>
+        </FeatureGate>
       )}
 
       {/* Price Analysis */}

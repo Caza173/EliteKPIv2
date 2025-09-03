@@ -154,7 +154,7 @@ export class TaskReminderService {
           </div>
           
           <div style="text-align: center; margin: 30px 0;">
-            <a href="${process.env.REPL_ID ? `https://${process.env.REPL_ID}.replit.app/smart-tasks` : 'https://elitekpi.com/smart-tasks'}" 
+            <a href="http://localhost:5000/smart-tasks" 
                style="display: inline-block; background-color: #6366f1; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: 600; margin: 0 10px;">
               Complete Task
             </a>
@@ -181,7 +181,7 @@ export class TaskReminderService {
                reminderType === '10min' ? `⚠️ Task Due in 10 min: ${task.title}` :
                `🚨 Task Due in 5 min: ${task.title}`,
       html: emailContent,
-      text: `Task Reminder: "${task.title}" is due now!\n\nDue: ${dueDate} at ${dueTime}\n${task.description ? `\nDescription: ${task.description}` : ''}\n\nPriority: ${task.priority}\n\nComplete your task: ${process.env.REPL_ID ? `https://${process.env.REPL_ID}.replit.app/smart-tasks` : 'https://elitekpi.com/smart-tasks'}`
+      text: `Task Reminder: "${task.title}" is due now!\n\nDue: ${dueDate} at ${dueTime}\n${task.description ? `\nDescription: ${task.description}` : ''}\n\nPriority: ${task.priority}\n\nComplete your task: http://localhost:5000/smart-tasks`
     };
 
     try {
@@ -203,7 +203,7 @@ export class TaskReminderService {
     const smsLabel = reminderType === 'due' ? 'Due' : 
                     reminderType === '5min-overdue' ? 'Overdue' : 'Reminder';
                     
-    const smsMessage = `📅 EliteKPI Task ${smsLabel}: "${task.title}" - Due ${timeLabel}. Complete at ${process.env.REPL_ID ? `https://${process.env.REPL_ID}.replit.app/smart-tasks` : 'https://elitekpi.com/smart-tasks'}`;
+    const smsMessage = `📅 EliteKPI Task ${smsLabel}: "${task.title}" - Due ${timeLabel}. Complete at http://localhost:5000/smart-tasks`;
     
     console.log(`Mock SMS to ${user.email} (SMS feature): ${smsMessage}`);
     

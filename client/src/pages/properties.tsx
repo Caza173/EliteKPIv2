@@ -211,7 +211,7 @@ export default function Properties() {
                   <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
                     Recent Showings
                   </h2>
-                  <p className="text-sm text-gray-500">Your latest property showings</p>
+                  <p className="text-sm text-black">Your latest property showings</p>
                 </div>
               </div>
               <span className="bg-blue-50 text-blue-700 px-3 py-1 rounded-full text-sm font-medium">
@@ -288,6 +288,24 @@ export default function Properties() {
                       <Button 
                         size="sm" 
                         variant="outline" 
+                        className="bg-red-600 text-white hover:bg-red-700"
+                        onClick={() => {
+                          // Create a proper Zillow search URL with address and city
+                          const address = property?.address || '';
+                          const city = property?.city || '';
+                          const state = property?.state || '';
+                          
+                          // Format the search query for Zillow
+                          const searchQuery = `${address}, ${city}, ${state}`.replace(/,\s*$/, '');
+                          const zillowUrl = `https://www.zillow.com/homes/${encodeURIComponent(searchQuery)}_rb/`;
+                          window.open(zillowUrl, '_blank');
+                        }}
+                      >
+                        🏠 View on Zillow
+                      </Button>
+                      <Button 
+                        size="sm" 
+                        variant="outline" 
                         className=""
                         onClick={() => {
                           if (property) {
@@ -318,14 +336,14 @@ export default function Properties() {
   );
 
   return (
-    <div className="flex-1 overflow-y-auto p-4 md:p-6 bg-white min-h-screen">
+    <div className="flex-1 overflow-y-auto p-4 md:p-6 min-h-screen" style={{ background: 'linear-gradient(135deg, #0a1a2a 0%, #1e3a8a 30%, #2563eb 60%, #ffffff 100%)' }}>
       <div className="max-w-7xl mx-auto space-y-6">
         {/* Header with Actions */}
         <div className="bg-white rounded-lg shadow-sm p-6">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900 mb-2">Properties</h1>
-              <p className="text-gray-600">
+              <h1 className="text-3xl font-bold text-black mb-2">Properties</h1>
+              <p className="text-black">
                 Manage your property pipeline from listing to closing
               </p>
             </div>
@@ -336,7 +354,7 @@ export default function Properties() {
                 className="flex items-center gap-2"
               >
                 <Calendar className="h-4 w-4" />
-                Schedule Showing
+                Add Showing
               </Button>
               <Button
                 onClick={() => setIsAddModalOpen(true)}
@@ -356,8 +374,8 @@ export default function Properties() {
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-gray-600 text-sm">Total Properties</p>
-                  <p className="text-2xl font-bold text-gray-900">{(properties as Property[]).length}</p>
+                  <p className="text-black text-sm">Total Properties</p>
+                  <p className="text-2xl font-bold text-black">{(properties as Property[]).length}</p>
                 </div>
                 <Building className="h-8 w-8 text-gray-400" />
               </div>
@@ -368,8 +386,8 @@ export default function Properties() {
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-gray-600 text-sm">Closed Properties</p>
-                  <p className="text-2xl font-bold text-gray-900">{(properties as Property[]).filter(p => p.status === 'closed').length}</p>
+                  <p className="text-black text-sm">Closed Properties</p>
+                  <p className="text-2xl font-bold text-black">{(properties as Property[]).filter(p => p.status === 'closed').length}</p>
                 </div>
                 <Home className="h-8 w-8 text-gray-400" />
               </div>
@@ -380,8 +398,8 @@ export default function Properties() {
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-gray-600 text-sm">Active Listings</p>
-                  <p className="text-2xl font-bold text-gray-900">{(properties as Property[]).filter(p => p.status === 'listed').length}</p>
+                  <p className="text-black text-sm">Active Listings</p>
+                  <p className="text-2xl font-bold text-black">{(properties as Property[]).filter(p => p.status === 'listed').length}</p>
                 </div>
                 <TrendingUp className="h-8 w-8 text-gray-400" />
               </div>
@@ -392,8 +410,8 @@ export default function Properties() {
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-gray-600 text-sm">Recent Showings</p>
-                  <p className="text-2xl font-bold text-gray-900">{showingActivities.length}</p>
+                  <p className="text-black text-sm">Recent Showings</p>
+                  <p className="text-2xl font-bold text-black">{showingActivities.length}</p>
                 </div>
                 <Users className="h-8 w-8 text-gray-400" />
               </div>

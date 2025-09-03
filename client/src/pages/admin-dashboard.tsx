@@ -32,7 +32,8 @@ interface DashboardStats {
 export default function AdminDashboard() {
   const { data: stats, isLoading } = useQuery<DashboardStats>({
     queryKey: ["/api/admin/dashboard-stats"],
-    refetchInterval: 30000, // Refetch every 30 seconds
+    // Removed automatic polling to prevent authentication loops
+    // refetchInterval: 30000, // Refetch every 30 seconds
   });
 
   const { data: recentFeedback = [] } = useQuery<Array<{

@@ -21,6 +21,7 @@ import {
   Clock,
   CheckCircle2,
   Trophy,
+  Lock,
   Unlock,
   Edit3,
   Users,
@@ -30,7 +31,6 @@ import {
   HandHeart,
   Timer,
   Save,
-  Lock,
   Calendar,
   BarChart3,
   ArrowUp,
@@ -142,14 +142,14 @@ export default function Activities() {
   // Save goal mutation
   const saveGoalMutation = useMutation({
     mutationFn: async (data: any) => {
-      return apiRequest('/api/goals', 'POST', data);
+      return apiRequest('/api/daily-goals', 'POST', data);
     },
-    onSuccess: () => {
+    onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['/api/goals'] });
       queryClient.invalidateQueries({ queryKey: ['/api/dashboard/metrics'] });
       toast({
-        title: "Goals Locked",
-        description: "Your goals have been set and locked successfully."
+        title: variables.isLocked ? "Goals Locked" : "Goals Unlocked",
+        description: variables.isLocked ? "Your goals have been set and locked successfully." : "Your goals have been unlocked and can now be edited."
       });
     },
   });
@@ -175,15 +175,25 @@ export default function Activities() {
 
   const handleLockGoals = () => {
     const goalData = {
-      calls: parseInt(dailyGoals.calls) || 0,
-      appointments: parseInt(dailyGoals.buyerAppointments) + parseInt(dailyGoals.sellerAppointments) || 0,
-      hours: parseFloat(dailyGoals.dailyHours) || 0,
-      cmas: parseInt(dailyGoals.cmasCompleted) || 0,
-      offersToWrite: parseInt(dailyGoals.offersToWrite) || 0,
-      monthlyClosings: parseInt(dailyGoals.monthlyClosings) || 0,
-      period: 'daily' as const,
-      effectiveDate: selectedDate,
-      isLocked: true
+      callsTarget: parseInt(dailyGoals.calls) || 0,
+      appointmentsTarget: parseInt(dailyGoals.buyerAppointments) + parseInt(dailyGoals.sellerAppointments) || 0,
+      hoursTarget: parseFloat(dailyGoals.dailyHours) || 0,
+      cmasTarget: parseInt(dailyGoals.cmasCompleted) || 0,
+      isLocked: true,
+      date: selectedDate
+    };
+
+    saveGoalMutation.mutate(goalData);
+  };
+
+  const handleUnlockGoals = () => {
+    const goalData = {
+      callsTarget: parseInt(dailyGoals.calls) || 0,
+      appointmentsTarget: parseInt(dailyGoals.buyerAppointments) + parseInt(dailyGoals.sellerAppointments) || 0,
+      hoursTarget: parseFloat(dailyGoals.dailyHours) || 0,
+      cmasTarget: parseInt(dailyGoals.cmasCompleted) || 0,
+      isLocked: false,
+      date: selectedDate
     };
 
     saveGoalMutation.mutate(goalData);
@@ -224,7 +234,7 @@ export default function Activities() {
   ];
 
   return (
-    <div className="container mx-auto px-4 py-6 max-w-7xl">
+    <div className="container mx-auto px-4 py-6 max-w-7xl bg-white min-h-full">
       
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
@@ -234,13 +244,22 @@ export default function Activities() {
         </div>
         
         <Button 
-          onClick={handleLockGoals}
+          onClick={currentDailyGoal?.isLocked ? handleUnlockGoals : handleLockGoals}
           disabled={saveGoalMutation.isPending}
-          className="bg-red-500 hover:bg-red-600 text-white"
-          data-testid="button-unlock-goals"
+          className={currentDailyGoal?.isLocked ? "bg-green-500 hover:bg-green-600 text-white" : "bg-red-500 hover:bg-red-600 text-white"}
+          data-testid={currentDailyGoal?.isLocked ? "button-unlock-goals" : "button-lock-goals"}
         >
-          <Unlock className="h-4 w-4 mr-2" />
-          Unlock Goals
+          {currentDailyGoal?.isLocked ? (
+            <>
+              <Unlock className="h-4 w-4 mr-2" />
+              Unlock Goals
+            </>
+          ) : (
+            <>
+              <Lock className="h-4 w-4 mr-2" />
+              Lock Goals
+            </>
+          )}
         </Button>
       </div>
 
@@ -268,7 +287,8 @@ export default function Activities() {
                       type="number"
                       value={dailyGoals.calls}
                       onChange={(e) => setDailyGoals(prev => ({ ...prev, calls: e.target.value }))}
-                      className="w-20 bg-white border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                      disabled={currentDailyGoal?.isLocked}
+                      className={`w-20 border-gray-300 focus:border-blue-500 focus:ring-blue-500 ${currentDailyGoal?.isLocked ? 'bg-gray-100 cursor-not-allowed' : 'bg-white'}`}
                       data-testid="input-calls-goal"
                     />
                     <Select value="daily">
@@ -292,7 +312,8 @@ export default function Activities() {
                       type="number"
                       value={dailyGoals.buyerAppointments}
                       onChange={(e) => setDailyGoals(prev => ({ ...prev, buyerAppointments: e.target.value }))}
-                      className="w-20 bg-white border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                      disabled={currentDailyGoal?.isLocked}
+                      className={`w-20 border-gray-300 focus:border-blue-500 focus:ring-blue-500 ${currentDailyGoal?.isLocked ? 'bg-gray-100 cursor-not-allowed' : 'bg-white'}`}
                       data-testid="input-buyer-appointments-goal"
                     />
                     <Select value="daily">

@@ -37,7 +37,6 @@ const baseNavigation = [
   { name: 'Properties', href: '/properties', icon: Home },
   { name: 'Log Activities & Goals', href: '/activities', icon: Activity },
   { name: 'CMAs', href: '/cmas', icon: FileText },
-  { name: 'Scripts', href: '/scripts', icon: MessageSquare },
   { name: 'Expense Analysis', href: '/expense-analysis', icon: TrendingDown },
   { name: 'Reports', href: '/reports', icon: TrendingUp },
   { name: 'Performance', href: '/performance', icon: PieChart },
@@ -74,7 +73,7 @@ const adminNavigation: any[] = [
 export default function Sidebar({ isOpen, onClose }: SidebarProps) {
   const [location] = useLocation();
   const isMobile = useIsMobile();
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
 
   // Mock subscription plan - in real app this would come from API
   const currentSubscription = {
@@ -127,14 +126,14 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                     "group flex items-center px-4 py-4 text-base font-medium nav-modern min-w-0 touch-manipulation cursor-pointer",
                     isActive
                       ? "active text-white"
-                      : "text-sidebar-foreground/80 hover:text-sidebar-foreground"
+                      : "text-black hover:text-black"
                   )}
                   onClick={() => isMobile && onClose()}
                 >
                   <item.icon
                     className={cn(
                       "mr-3 h-6 w-6 flex-shrink-0",
-                      isActive ? "text-white" : "text-sidebar-foreground/60"
+                      isActive ? "text-white" : "text-black"
                     )}
                   />
                   <span className="truncate">{item.name}</span>
@@ -192,14 +191,14 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                     "group flex items-center px-4 py-4 text-base font-medium nav-modern min-w-0 touch-manipulation cursor-pointer",
                     isActive
                       ? "active text-white"
-                      : "text-sidebar-foreground/80 hover:text-sidebar-foreground"
+                      : "text-black hover:text-black"
                   )}
                   onClick={() => isMobile && onClose()}
                 >
                   <item.icon
                     className={cn(
                       "mr-3 h-6 w-6",
-                      isActive ? "text-white" : "text-gray-400"
+                      isActive ? "text-white" : "text-black"
                     )}
                   />
                   {item.name}
@@ -210,10 +209,10 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
           
           {/* Logout */}
           <button
-            onClick={() => window.location.href = '/api/logout'}
-            className="w-full group flex items-center px-4 py-4 text-base font-medium nav-modern text-sidebar-foreground/80 hover:text-sidebar-foreground touch-manipulation"
+            onClick={logout}
+            className="w-full group flex items-center px-4 py-4 text-base font-medium nav-modern text-black hover:text-black touch-manipulation"
           >
-            <span className="mr-3 h-6 w-6 text-gray-400">→</span>
+            <span className="mr-3 h-6 w-6 text-black">→</span>
             Logout
           </button>
         </div>

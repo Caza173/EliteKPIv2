@@ -57,7 +57,7 @@ const SubscribeForm = () => {
   return (
     <form onSubmit={handleSubmit} className="space-y-6" data-testid="subscription-form">
       <div className="space-y-4">
-        <h3 className="text-lg font-semibold">Payment Information</h3>
+        <h3 className="text-lg font-semibold text-black">Payment Information</h3>
         <div className="p-4 border rounded-lg">
           <PaymentElement />
         </div>
@@ -77,10 +77,10 @@ const SubscribeForm = () => {
         <Button 
           type="submit" 
           disabled={!stripe || isLoading}
-          className="flex-1"
+          className="flex-1 bg-purple-600 hover:bg-purple-700"
           data-testid="button-subscribe"
         >
-          {isLoading ? "Processing..." : "Subscribe Now"}
+          {isLoading ? "Processing..." : "Start Free Trial"}
         </Button>
       </div>
     </form>
@@ -96,6 +96,37 @@ export default function Subscribe() {
   // Extract plan from URL query parameters
   const urlParams = new URLSearchParams(location.split('?')[1] || '');
   const planId = urlParams.get('plan') || 'professional';
+
+  // Plan details for display
+  const planDetails = {
+    starter: {
+      name: "Starter",
+      price: 29,
+      features: [
+        "1 user included",
+        "Up to 25 active properties",
+        "Basic contact management",
+        "Expense tracking & time logging",
+        "Basic reports & dashboard",
+        "Email support"
+      ]
+    },
+    professional: {
+      name: "Professional", 
+      price: 69,
+      features: [
+        "3 users included (add'l $15/user)",
+        "Up to 100 active properties",
+        "Comprehensive property pipeline",
+        "Advanced CMAs & analytics",
+        "Market Timing AI & Offer Strategies",
+        "Office Challenges & Competition Hub",
+        "Priority support & API access"
+      ]
+    }
+  };
+
+  const selectedPlan = planDetails[planId as keyof typeof planDetails] || planDetails.professional;
 
   useEffect(() => {
     // Create subscription as soon as the page loads
@@ -184,39 +215,26 @@ export default function Subscribe() {
                 <CheckCircle className="w-6 h-6 text-white" />
               </div>
               <div>
-                <CardTitle>Subscribe to EliteKPI Professional</CardTitle>
-                <CardDescription>
-                  Get access to advanced real estate management features
+                <CardTitle className="text-black">Subscribe to EliteKPI {selectedPlan.name}</CardTitle>
+                <CardDescription className="text-black">
+                  ✅ Free 1-Week Trial • Cancel anytime
                 </CardDescription>
               </div>
             </div>
 
             <div className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-950/50 dark:to-purple-950/50 rounded-lg p-6 mb-6">
               <div className="text-center">
-                <div className="text-3xl font-bold text-primary">$29.99</div>
-                <div className="text-sm text-muted-foreground">per month</div>
+                <div className="text-3xl font-bold text-black">${selectedPlan.price}</div>
+                <div className="text-sm text-black">per month after trial</div>
+                <div className="text-xs text-green-600 font-medium mt-1">First week FREE</div>
               </div>
               <div className="mt-4 space-y-2">
-                <div className="flex items-center gap-2 text-sm">
-                  <CheckCircle className="w-4 h-4 text-green-500" />
-                  <span>Unlimited properties & commissions</span>
-                </div>
-                <div className="flex items-center gap-2 text-sm">
-                  <CheckCircle className="w-4 h-4 text-green-500" />
-                  <span>Advanced analytics & reporting</span>
-                </div>
-                <div className="flex items-center gap-2 text-sm">
-                  <CheckCircle className="w-4 h-4 text-green-500" />
-                  <span>Market trends & insights</span>
-                </div>
-                <div className="flex items-center gap-2 text-sm">
-                  <CheckCircle className="w-4 h-4 text-green-500" />
-                  <span>Goal tracking & achievements</span>
-                </div>
-                <div className="flex items-center gap-2 text-sm">
-                  <CheckCircle className="w-4 h-4 text-green-500" />
-                  <span>Priority support</span>
-                </div>
+                {selectedPlan.features.map((feature, index) => (
+                  <div key={index} className="flex items-center gap-2 text-sm text-black">
+                    <CheckCircle className="w-4 h-4 text-green-500 flex-shrink-0" />
+                    <span>{feature}</span>
+                  </div>
+                ))}
               </div>
             </div>
           </CardHeader>

@@ -60,7 +60,7 @@ export default function AdminLoginPage() {
                 data-testid="admin-login-button"
               >
                 <LogIn className="h-4 w-4 mr-2" />
-                Sign In with Replit
+                Sign In
               </Button>
             </div>
           ) : !(user as any)?.isAdmin ? (

@@ -216,12 +216,13 @@ export default function OfferStrategies() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="min-h-screen" style={{ background: 'linear-gradient(135deg, #0a1a2a 0%, #1e3a8a 30%, #2563eb 60%, #ffffff 100%)' }}>
+      <div className="max-w-7xl mx-auto p-6 space-y-6">
       <div className="flex items-center space-x-2">
         <Brain className="h-8 w-8 text-blue-600" />
         <div>
-          <h1 className="text-3xl font-bold">AI-Powered Offer Strategies</h1>
-          <p className="text-gray-600">Intelligent recommendations based on market data, demographics, and property type</p>
+          <h1 className="text-3xl font-bold text-black">AI-Powered Offer Strategies</h1>
+          <p className="text-black">Intelligent recommendations based on market data, demographics, and property type</p>
         </div>
       </div>
 
@@ -229,11 +230,11 @@ export default function OfferStrategies() {
         {/* Offer Calculator */}
         <Card className="lg:col-span-1">
           <CardHeader>
-            <CardTitle className="flex items-center space-x-2">
+            <CardTitle className="flex items-center space-x-2 text-black">
               <Calculator className="h-5 w-5" />
               <span>Offer Calculator</span>
             </CardTitle>
-            <CardDescription>Enter property and market details</CardDescription>
+            <CardDescription className="text-black">Enter property and market details</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
@@ -279,7 +280,34 @@ export default function OfferStrategies() {
               </Label>
               <AddressAutocomplete
                 value={offerFactors.address}
-                onChange={(value) => handleInputChange('address', value)}
+                onChange={(value) => {
+                  // Only update the display value without interfering with selection
+                  setOfferFactors(prev => ({
+                    ...prev,
+                    address: value
+                  }));
+                }}
+                onAddressSelect={(components) => {
+                  // Handle complete address selection
+                  setOfferFactors(prev => ({
+                    ...prev,
+                    address: components.address,
+                    city: components.city,
+                    state: components.state,
+                    zipCode: components.zipCode,
+                    location: `${components.city}, ${components.state}`
+                  }));
+                  // Automatically fetch market data when address is selected
+                  if (components.address && components.city && components.state && components.zipCode) {
+                    setIsLoadingMarketData(true);
+                    fetchMarketDataMutation.mutate({
+                      address: components.address,
+                      city: components.city,
+                      state: components.state,
+                      zipCode: components.zipCode
+                    });
+                  }
+                }}
                 placeholder="Start typing the property address..."
               />
             </div>
@@ -490,7 +518,7 @@ export default function OfferStrategies() {
         {/* Strategic Recommendations */}
         <Card className="lg:col-span-2">
           <CardHeader>
-            <CardTitle className="flex items-center space-x-2">
+            <CardTitle className="flex items-center space-x-2 text-black">
               <Target className="h-5 w-5" />
               <span>Strategic Recommendations</span>
             </CardTitle>
@@ -499,10 +527,10 @@ export default function OfferStrategies() {
           <CardContent>
             {!strategies ? (
               <div className="flex flex-col items-center justify-center py-12 space-y-4 text-center">
-                <Brain className="h-16 w-16 text-gray-300" />
+                <Brain className="h-16 w-16 text-black" />
                 <div>
-                  <h3 className="text-lg font-semibold text-gray-600">Ready to Analyze</h3>
-                  <p className="text-gray-500">Fill in the offer details and click "Generate AI Strategies" to get personalized recommendations</p>
+                  <h3 className="text-lg font-semibold text-black">Ready to Analyze</h3>
+                  <p className="text-black">Fill in the offer details and click "Generate AI Strategies" to get personalized recommendations</p>
                 </div>
               </div>
             ) : (
@@ -527,13 +555,13 @@ export default function OfferStrategies() {
                       <CardContent>
                         <div className="space-y-2">
                           <div className="flex justify-between">
-                            <span className="text-sm text-gray-600">Recommended Offer:</span>
+                            <span className="text-sm text-black">Recommended Offer:</span>
                             <span className="font-semibold text-lg">
                               ${strategies.primaryStrategy?.recommendedOffer?.toLocaleString() || '0'}
                             </span>
                           </div>
                           <div className="flex justify-between">
-                            <span className="text-sm text-gray-600">Offer Percentage:</span>
+                            <span className="text-sm text-black">Offer Percentage:</span>
                             <span className="font-medium">
                               {strategies.primaryStrategy?.offerPercentage?.toFixed(1) || '0'}% of asking
                             </span>
@@ -572,27 +600,27 @@ export default function OfferStrategies() {
                             </div>
                             <div className="space-y-2">
                               <div className="flex justify-between items-center">
-                                <span className="text-sm text-gray-600">Market Trend:</span>
+                                <span className="text-sm text-black">Market Trend:</span>
                                 <Badge variant={offerFactors.marketData.marketTrend === 'rising' ? 'default' : offerFactors.marketData.marketTrend === 'stable' ? 'outline' : 'destructive'} className="capitalize">
                                   <TrendingUp className="h-3 w-3 mr-1" />
                                   {offerFactors.marketData.marketTrend}
                                 </Badge>
                               </div>
                               <div className="flex justify-between">
-                                <span className="text-sm text-gray-600">Avg DOM:</span>
+                                <span className="text-sm text-black">Avg DOM:</span>
                                 <span className="font-medium">{offerFactors.marketData.daysOnMarket} days</span>
                               </div>
                               <div className="flex justify-between">
-                                <span className="text-sm text-gray-600">Recent Sales:</span>
+                                <span className="text-sm text-black">Recent Sales:</span>
                                 <span className="font-medium">{offerFactors.marketData.soldComps} comps</span>
                               </div>
                               <div className="flex justify-between">
-                                <span className="text-sm text-gray-600">Competition:</span>
+                                <span className="text-sm text-black">Competition:</span>
                                 <Badge variant="outline" className="capitalize">{offerFactors.marketData.competitiveLevel}</Badge>
                               </div>
                               {offerFactors.marketData.schoolRating && (
                                 <div className="flex justify-between">
-                                  <span className="text-sm text-gray-600">School Rating:</span>
+                                  <span className="text-sm text-black">School Rating:</span>
                                   <span className="font-medium">{offerFactors.marketData.schoolRating}/10</span>
                                 </div>
                               )}
@@ -604,30 +632,30 @@ export default function OfferStrategies() {
                         ) : (
                           <div className="space-y-2">
                             <div className="flex justify-between">
-                              <span className="text-sm text-gray-600">Seller Motivation:</span>
+                              <span className="text-sm text-black">Seller Motivation:</span>
                               <Badge variant="outline" className="capitalize">
                                 {offerFactors.sellerMotivation.replace('_', ' ')}
                               </Badge>
                             </div>
                             <div className="flex justify-between">
-                              <span className="text-sm text-gray-600">Buyer Timeline:</span>
+                              <span className="text-sm text-black">Buyer Timeline:</span>
                               <Badge variant="outline" className="capitalize">
                                 {offerFactors.buyerTimeframe.replace('_', ' ')}
                               </Badge>
                             </div>
                             <div className="flex justify-between">
-                              <span className="text-sm text-gray-600">Competition:</span>
+                              <span className="text-sm text-black">Competition:</span>
                               <Badge variant="outline">{offerFactors.competitionLevel}</Badge>
                             </div>
                             <div className="flex justify-between">
-                              <span className="text-sm text-gray-600">Days on Market:</span>
+                              <span className="text-sm text-black">Days on Market:</span>
                               <span className="font-medium">{offerFactors.daysOnMarket} days</span>
                             </div>
                             <div className="flex justify-between">
-                              <span className="text-sm text-gray-600">Price Reductions:</span>
+                              <span className="text-sm text-black">Price Reductions:</span>
                               <span className="font-medium">{offerFactors.priceReductions}</span>
                             </div>
-                            <p className="text-sm text-gray-600 mt-2">
+                            <p className="text-sm text-black mt-2">
                               Enter a property address above to get real-time market insights
                             </p>
                           </div>
@@ -639,7 +667,7 @@ export default function OfferStrategies() {
                   <div className="space-y-4">
                     <div>
                       <h3 className="font-semibold mb-2">Strategy Reasoning</h3>
-                      <p className="text-gray-700" data-testid="text-strategy-reasoning">
+                      <p className="text-black" data-testid="text-strategy-reasoning">
                         {strategies.primaryStrategy?.reasoning || 'Strategy analysis not available'}
                       </p>
                     </div>
@@ -688,15 +716,15 @@ export default function OfferStrategies() {
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="space-y-2">
                           <div className="flex justify-between">
-                            <span className="text-sm text-gray-600">Response Deadline:</span>
+                            <span className="text-sm text-black">Response Deadline:</span>
                             <span className="font-medium">{strategies.primaryStrategy?.timeline?.responseDeadline || 'N/A'}</span>
                           </div>
                           <div className="flex justify-between">
-                            <span className="text-sm text-gray-600">Inspection Period:</span>
+                            <span className="text-sm text-black">Inspection Period:</span>
                             <span className="font-medium">{strategies.primaryStrategy?.terms?.inspectionPeriod || 0} days</span>
                           </div>
                           <div className="flex justify-between">
-                            <span className="text-sm text-gray-600">Financing Contingency:</span>
+                            <span className="text-sm text-black">Financing Contingency:</span>
                             <span className="font-medium">{strategies.primaryStrategy?.terms?.financingContingency || 0} days</span>
                           </div>
                         </div>
@@ -800,6 +828,7 @@ export default function OfferStrategies() {
             )}
           </CardContent>
         </Card>
+      </div>
       </div>
     </div>
   );

@@ -106,7 +106,7 @@ import { db } from "./db";
 import { eq, and, desc, asc, gte, lte, sql, count, isNotNull } from "drizzle-orm";
 
 export interface IStorage {
-  // User operations - required for Replit Auth
+  // User operations - required for authentication
   getUser(id: string): Promise<User | undefined>;
   upsertUser(user: UpsertUser): Promise<User>;
   searchUsers(query: string): Promise<User[]>;
@@ -1182,6 +1182,7 @@ export class DatabaseStorage implements IStorage {
       totalRevenue,
       totalVolume,
       propertiesClosed: closedProperties.length,
+      totalProperties: userProperties.length, // Add total property count
       activeListings,
       withdrawnProperties: withdrawnProperties.length,
       expiredProperties: expiredProperties.length,

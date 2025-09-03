@@ -32,7 +32,7 @@ Preferred communication style: Simple, everyday language.
 - **Data Modeling**: Comprehensive schema covering users, properties, commissions, expenses, time tracking, activities, CMAs, showings, mileage logs, and goals
 
 ### Authentication and Authorization
-- **Authentication Provider**: Replit Auth with OpenID Connect integration
+- **Authentication Provider**: Simple development authentication system (replace with your preferred solution in production)
 - **Session Management**: Express sessions with PostgreSQL storage
 - **Authorization**: Route-level authentication middleware with user context
 - **Security**: HTTP-only secure cookies with configurable TTL
@@ -51,8 +51,8 @@ Preferred communication style: Simple, everyday language.
 - **Environment Configuration**: DATABASE_URL and SESSION_SECRET required
 
 ### Authentication Services
-- **Replit Auth**: OpenID Connect provider for user authentication
-- **Required Environment Variables**: REPLIT_DOMAINS, ISSUER_URL, REPL_ID, SESSION_SECRET
+- **Simple Auth**: Development authentication system (customize for production)
+- **Required Environment Variables**: DATABASE_URL, SESSION_SECRET
 
 ### Frontend Libraries
 - **UI Framework**: React 18 with TypeScript support

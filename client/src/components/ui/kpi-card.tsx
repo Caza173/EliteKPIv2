@@ -46,7 +46,7 @@ export function KpiCard({ title, value, delta, sparkline, intent = "neutral" }: 
         <div className="space-y-3">
           {/* Header with title and delta */}
           <div className="flex items-start justify-between">
-            <p className="text-xs font-medium text-slate-600 tracking-wide uppercase">
+            <p className="text-xs font-medium text-black tracking-wide uppercase">
               {title}
             </p>
             {delta && (
@@ -62,7 +62,7 @@ export function KpiCard({ title, value, delta, sparkline, intent = "neutral" }: 
           </div>
           
           {/* Main value */}
-          <p className="text-3xl font-bold text-slate-900 tabular-nums">
+          <p className="text-3xl font-bold text-black tabular-nums">
             {value}
           </p>
           

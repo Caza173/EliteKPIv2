@@ -149,17 +149,15 @@ function Router() {
       <Route path="/admin/users" component={AdminUsersPage} />
       <Route path="/admin/feedback" component={AdminFeedback} />
       
-      {isLoading || !isAuthenticated ? (
+      {isLoading ? (
+        <div className="flex items-center justify-center min-h-screen">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        </div>
+      ) : !isAuthenticated ? (
         <>
           <Route path="/" component={Landing} />
-          <Route path="/settings" component={() => {
-            window.location.href = '/api/login';
-            return null;
-          }} />
-          <Route component={() => {
-            window.location.href = '/api/login';
-            return null;
-          }} />
+          <Route path="/settings" component={Landing} />
+          <Route component={Landing} />
         </>
       ) : (
         <AppLayout>

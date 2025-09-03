@@ -15,7 +15,7 @@ import {
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
-// Session storage table - required for Replit Auth
+// Session storage table - required for authentication
 export const sessions = pgTable(
   "sessions",
   {
@@ -26,7 +26,7 @@ export const sessions = pgTable(
   (table) => [index("IDX_session_expire").on(table.expire)],
 );
 
-// User storage table - required for Replit Auth
+// User storage table - required for authentication
 export const users = pgTable("users", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   email: varchar("email").unique(),
@@ -42,6 +42,7 @@ export const users = pgTable("users", {
   // Stripe fields
   stripeCustomerId: varchar("stripe_customer_id"),
   stripeSubscriptionId: varchar("stripe_subscription_id"),
+  planId: varchar("plan_id").default('starter'), // starter, professional
   // User defaults for calculations
   hourlyRate: decimal("hourly_rate", { precision: 10, scale: 2 }).default('75.00'),
   vehicleMpg: decimal("vehicle_mpg", { precision: 5, scale: 2 }).default('25.00'),
@@ -56,6 +57,9 @@ export const users = pgTable("users", {
   // Office information
   officeId: varchar("office_id"),
   officeName: varchar("office_name"),
+  // Authentication
+  passwordHash: varchar("password_hash"), // For traditional login
+  lastLoginAt: timestamp("last_login_at"),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
@@ -160,6 +164,7 @@ export const timeEntries = pgTable("time_entries", {
   propertyId: varchar("property_id").references(() => properties.id, { onDelete: 'set null' }),
   activity: varchar("activity", { length: 200 }).notNull(),
   hours: decimal("hours", { precision: 5, scale: 2 }).notNull(),
+  amount: decimal("amount", { precision: 10, scale: 2 }).notNull().default('0'),
   date: date("date").notNull(),
   description: text("description"),
   createdAt: timestamp("created_at").defaultNow(),
@@ -709,6 +714,7 @@ export const insertExpenseSchema = createInsertSchema(expenses).extend({
 
 export const insertTimeEntrySchema = createInsertSchema(timeEntries).extend({
   hours: z.coerce.string(),
+  amount: z.coerce.string(),
 }).omit({
   id: true,
   userId: true,

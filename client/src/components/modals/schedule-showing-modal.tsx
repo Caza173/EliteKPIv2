@@ -395,11 +395,11 @@ export default function ScheduleShowingModal({ isOpen, onClose, selectedProperty
               </div>
               
               {user?.vehicleMpg && user?.avgGasPrice ? (
-                <div className="text-xs text-gray-500">
+                <div className="text-xs text-black">
                   Gas cost calculated using {user.vehicleMpg} MPG at ${user.avgGasPrice}/gallon from your settings
                 </div>
               ) : (
-                <div className="text-xs text-orange-500">
+                <div className="text-xs text-orange-600">
                   Set up your vehicle settings to enable automatic gas cost calculation
                 </div>
               )}
@@ -453,11 +453,11 @@ export default function ScheduleShowingModal({ isOpen, onClose, selectedProperty
                         type="checkbox"
                         checked={field.value}
                         onChange={field.onChange}
-                        className="mt-1"
+                        className="mt-1 h-4 w-4 rounded border-2 border-gray-300 text-blue-600 focus:ring-blue-500 focus:ring-2"
                       />
                     </FormControl>
                     <div className="space-y-1 leading-none">
-                      <FormLabel>Follow-up Required</FormLabel>
+                      <FormLabel className="text-black">Follow-up Required</FormLabel>
                     </div>
                     <FormMessage />
                   </FormItem>

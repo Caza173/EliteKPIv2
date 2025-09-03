@@ -15,7 +15,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
   const isMobile = useIsMobile();
 
   return (
-    <div className="flex h-screen overflow-hidden bg-gray-50 dark:bg-gray-900 ios-safe-area mobile-optimized">
+    <div className="flex h-screen overflow-hidden bg-transparent ios-safe-area mobile-optimized">
       {/* Sidebar */}
       <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 

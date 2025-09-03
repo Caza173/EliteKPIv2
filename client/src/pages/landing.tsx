@@ -1,13 +1,24 @@
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { BarChart3, TrendingUp, Target, Calculator, Shield } from "lucide-react";
+import { BarChart3, TrendingUp, Target, Calculator, Shield, Mail } from "lucide-react";
 import { Link } from "wouter";
+import TraditionalLogin from "@/components/auth/traditional-login";
 
-const handleLogin = () => {
+const handleSSO = () => {
   window.location.href = '/api/login';
 };
 
 export default function Landing() {
+  const [showTraditionalLogin, setShowTraditionalLogin] = useState(false);
+
+  if (showTraditionalLogin) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+        <TraditionalLogin onBack={() => setShowTraditionalLogin(false)} />
+      </div>
+    );
+  }
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
@@ -32,9 +43,19 @@ export default function Landing() {
                   Admin
                 </Button>
               </Link>
-              <Button onClick={handleLogin}>
-                Sign In
-              </Button>
+              <div className="flex gap-2">
+                <Button 
+                  variant="outline" 
+                  onClick={() => setShowTraditionalLogin(true)}
+                  className="hidden sm:flex"
+                >
+                  <Mail className="h-4 w-4 mr-2" />
+                  Email Login
+                </Button>
+                <Button onClick={handleSSO}>
+                  SSO / Google
+                </Button>
+              </div>
             </div>
           </div>
         </div>
@@ -50,13 +71,21 @@ export default function Landing() {
           <p className="mt-3 max-w-md mx-auto text-base text-gray-500 sm:text-lg md:mt-5 md:text-xl md:max-w-3xl">
             Track sales performance, manage property pipelines, and analyze ROI with our comprehensive business intelligence platform designed specifically for realtors.
           </p>
-          <div className="mt-5 max-w-md mx-auto sm:flex sm:justify-center md:mt-8">
+          <div className="mt-5 max-w-md mx-auto sm:flex sm:justify-center md:mt-8 gap-3">
             <Button 
               size="lg" 
-              onClick={handleLogin}
+              onClick={handleSSO}
               className="w-full sm:w-auto"
             >
-              Get Started
+              Get Started with SSO
+            </Button>
+            <Button 
+              size="lg" 
+              variant="outline"
+              onClick={() => setShowTraditionalLogin(true)}
+              className="w-full sm:w-auto"
+            >
+              Email Login
             </Button>
           </div>
         </div>
@@ -237,13 +266,23 @@ export default function Landing() {
         <div className="mt-20 text-center">
           <h2 className="text-3xl font-bold text-gray-900 mb-4">Ready to climb the leaderboard?</h2>
           <p className="text-xl text-gray-600 mb-8">Join the competition and see how you measure against top performers.</p>
-          <Button 
-            size="lg" 
-            onClick={handleLogin}
-            className="px-8 py-4 text-lg bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600"
-          >
-            Start Competing Today
-          </Button>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Button 
+              size="lg" 
+              onClick={handleSSO}
+              className="px-8 py-4 text-lg bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600"
+            >
+              Start Competing Today (SSO)
+            </Button>
+            <Button 
+              size="lg" 
+              variant="outline"
+              onClick={() => setShowTraditionalLogin(true)}
+              className="px-8 py-4 text-lg border-2 border-blue-500 text-blue-600 hover:bg-blue-50"
+            >
+              Sign In with Email
+            </Button>
+          </div>
         </div>
       </main>
     </div>

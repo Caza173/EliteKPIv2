@@ -30,6 +30,7 @@ import { apiRequest } from "@/lib/queryClient";
 import { insertPropertySchema } from "@shared/schema";
 import { PROPERTY_STATUSES } from "@/lib/constants";
 import AddressAutocomplete from "@/components/ui/address-autocomplete";
+import { useResourceUsage, ResourceGate } from "@/hooks/usePlanInfo";
 
 interface AddPropertyModalProps {
   isOpen: boolean;
@@ -39,6 +40,7 @@ interface AddPropertyModalProps {
 export default function AddPropertyModal({ isOpen, onClose }: AddPropertyModalProps) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const propertyUsage = useResourceUsage('properties');
 
   const form = useForm({
     resolver: zodResolver(insertPropertySchema),
@@ -86,6 +88,16 @@ export default function AddPropertyModal({ isOpen, onClose }: AddPropertyModalPr
   });
 
   const onSubmit = (data: any) => {
+    // Check if user can add more properties
+    if (!propertyUsage.canAdd) {
+      toast({
+        title: "Property Limit Reached",
+        description: `You've reached your property limit (${propertyUsage.current}/${propertyUsage.limit}). Upgrade to Professional to add more properties.`,
+        variant: "destructive",
+      });
+      return;
+    }
+
     // Convert string numbers to actual numbers where needed
     const processedData = {
       ...data,
@@ -103,11 +115,26 @@ export default function AddPropertyModal({ isOpen, onClose }: AddPropertyModalPr
       <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Add New Property</DialogTitle>
+          {/* Property usage indicator */}
+          <div className="text-sm text-gray-600 mt-2">
+            Properties: {propertyUsage.current}/{propertyUsage.limit === Infinity ? '∞' : propertyUsage.limit}
+            {propertyUsage.limit !== Infinity && (
+              <div className="w-full bg-gray-200 rounded-full h-2 mt-1">
+                <div 
+                  className={`h-2 rounded-full transition-all ${
+                    propertyUsage.percentage > 80 ? 'bg-red-500' : 
+                    propertyUsage.percentage > 60 ? 'bg-yellow-500' : 'bg-green-500'
+                  }`}
+                  style={{ width: `${Math.min(propertyUsage.percentage, 100)}%` }}
+                />
+              </div>
+            )}
+          </div>
         </DialogHeader>
         
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            {/* Address */}
+            {/* Single Address Field */}
             <FormField
               control={form.control}
               name="address"
@@ -118,7 +145,19 @@ export default function AddPropertyModal({ isOpen, onClose }: AddPropertyModalPr
                     <AddressAutocomplete
                       value={field.value}
                       onChange={field.onChange}
-                      placeholder="Start typing an address..."
+                      onAddressSelect={(addressComponents) => {
+                        // Auto-populate city, state, and zip code fields for backend
+                        if (addressComponents.city) {
+                          form.setValue("city", addressComponents.city);
+                        }
+                        if (addressComponents.state) {
+                          form.setValue("state", addressComponents.state);
+                        }
+                        if (addressComponents.zipCode) {
+                          form.setValue("zipCode", addressComponents.zipCode);
+                        }
+                      }}
+                      placeholder="Enter full address (e.g., 123 Main St, City, State 12345)"
                       className="w-full"
                     />
                   </FormControl>
@@ -126,6 +165,43 @@ export default function AddPropertyModal({ isOpen, onClose }: AddPropertyModalPr
                 </FormItem>
               )}
             />
+
+            {/* Hidden fields for backend compatibility */}
+            <div className="hidden">
+              <FormField
+                control={form.control}
+                name="city"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormControl>
+                      <Input {...field} />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="state"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormControl>
+                      <Input {...field} />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="zipCode"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormControl>
+                      <Input {...field} />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+            </div>
 
             {/* Client Name & Representation */}
             <div className="grid grid-cols-2 gap-4">
