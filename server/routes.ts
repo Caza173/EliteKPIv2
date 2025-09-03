@@ -6465,6 +6465,10 @@ Please format the script as a cohesive conversation that flows naturally from op
     }
   });
 
+  // Admin routes
+  const adminRoutes = (await import('./admin/routes')).default;
+  app.use('/api/admin', adminRoutes);
+
   const httpServer = createServer(app);
   return httpServer;
 }
