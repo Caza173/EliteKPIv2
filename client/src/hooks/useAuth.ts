@@ -6,6 +6,7 @@ interface User {
   firstName?: string;
   lastName?: string;
   company?: string;
+  isAdmin?: boolean;
 }
 
 interface UseAuthResult {
