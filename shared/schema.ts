@@ -26,6 +26,21 @@ export const sessions = pgTable(
   (table) => [index("IDX_session_expire").on(table.expire)],
 );
 
+// Subscription Plans table (reference data)
+export const subscriptionPlans = pgTable("subscription_plans", {
+  id: varchar("id").primaryKey(), // starter, professional, elite, enterprise
+  name: varchar("name").notNull(),
+  price: integer("price"), // in cents, null for custom pricing
+  yearlyPrice: integer("yearly_price"), // in cents for yearly plans
+  description: text("description"),
+  features: jsonb("features"), // array of feature descriptions
+  limits: jsonb("limits"), // plan limits object
+  isActive: boolean("is_active").default(true),
+  sortOrder: integer("sort_order").default(0),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
 // User storage table - required for authentication
 export const users = pgTable("users", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
@@ -42,7 +57,10 @@ export const users = pgTable("users", {
   // Stripe fields
   stripeCustomerId: varchar("stripe_customer_id"),
   stripeSubscriptionId: varchar("stripe_subscription_id"),
-  planId: varchar("plan_id").default('starter'), // starter, professional
+  planId: varchar("plan_id").default('starter'), // starter, professional, elite, enterprise
+  // Trial and plan info
+  trialStartDate: timestamp("trial_start_date"),
+  trialEndDate: timestamp("trial_end_date"),
   // User defaults for calculations
   hourlyRate: decimal("hourly_rate", { precision: 10, scale: 2 }).default('75.00'),
   vehicleMpg: decimal("vehicle_mpg", { precision: 5, scale: 2 }).default('25.00'),

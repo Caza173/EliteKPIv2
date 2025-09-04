@@ -36,6 +36,9 @@ import AdminFeedback from "@/pages/admin-feedback";
 import AdminLoginPage from "@/pages/admin-login";
 import AdminDashboard from "@/pages/admin-dashboard";
 import AdminUsersPage from "@/pages/admin-users";
+import AdminDashboardNew from "@/pages/admin/dashboard";
+import AdminSettings from "@/pages/admin/settings";
+import EfficiencyCalculator from "@/pages/efficiency-calculator";
 import AppLayout from "@/components/layout/app-layout";
 import { Trophy } from "lucide-react";
 
@@ -145,7 +148,8 @@ function Router() {
     <Switch>
       {/* Admin routes - handled separately with their own auth */}
       <Route path="/admin/login" component={AdminLoginPage} />
-      <Route path="/admin/dashboard" component={AdminDashboard} />
+      <Route path="/admin/dashboard" component={AdminDashboardNew} />
+      <Route path="/admin/settings" component={AdminSettings} />
       <Route path="/admin/users" component={AdminUsersPage} />
       <Route path="/admin/feedback" component={AdminFeedback} />
       
@@ -156,6 +160,7 @@ function Router() {
       ) : !isAuthenticated ? (
         <>
           <Route path="/" component={Landing} />
+          <Route path="/efficiency-calculator" component={EfficiencyCalculator} />
           <Route path="/settings" component={Landing} />
           <Route component={Landing} />
         </>

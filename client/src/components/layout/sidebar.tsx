@@ -2,6 +2,7 @@ import { Link, useLocation } from "wouter";
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useAuth } from "@/hooks/useAuth";
+import { usePlanInfo } from "@/hooks/usePlanInfo";
 import { 
   BarChart3, 
   Home, 
@@ -49,7 +50,7 @@ const professionalNavigation = [
   { name: 'Competition Hub', href: '/competition', icon: Trophy, requiresPlan: 'professional' },
 ];
 
-const eliteNavigation = [
+const eliteNavigation: any[] = [
   // Elite navigation items would go here
 ];
 
@@ -67,13 +68,18 @@ const bottomNavigation = [
 ];
 
 const adminNavigation: any[] = [
-  // Admin navigation removed from sidebar - access via admin login
+  { name: 'Admin Dashboard', href: '/admin/dashboard', icon: Shield, adminOnly: true },
+  { name: 'Admin Settings', href: '/admin/settings', icon: Settings, adminOnly: true },
 ];
 
 export default function Sidebar({ isOpen, onClose }: SidebarProps) {
   const [location] = useLocation();
   const isMobile = useIsMobile();
   const { user, logout } = useAuth();
+  const { data: planInfo } = usePlanInfo();
+
+  // Check if user is admin based on plan
+  const isAdmin = planInfo?.planId === 'enterprise';
 
   // Mock subscription plan - in real app this would come from API
   const currentSubscription = {
@@ -85,7 +91,9 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
     ...baseNavigation,
     ...professionalNavigation,
     ...eliteNavigation,
-    ...enterpriseNavigation
+    ...enterpriseNavigation,
+    // Show admin navigation only for admin users
+    ...(isAdmin ? adminNavigation : [])
   ];
 
   const sidebarContent = (

@@ -105,23 +105,52 @@ export default function Subscribe() {
       features: [
         "1 user included",
         "Up to 25 active properties",
-        "Basic contact management",
-        "Expense tracking & time logging",
-        "Basic reports & dashboard",
+        "Basic performance dashboards",
+        "Property management",
+        "Essential CMA tools",
         "Email support"
       ]
     },
     professional: {
       name: "Professional", 
-      price: 69,
+      price: 79,
       features: [
-        "3 users included (add'l $15/user)",
+        "3 users included ($15/additional user)",
         "Up to 100 active properties",
-        "Comprehensive property pipeline",
-        "Advanced CMAs & analytics",
+        "Advanced analytics & automation",
+        "Leaderboards & goal tracking",
+        "Performance analytics",
+        "Advanced CMAs",
+        "Priority email support"
+      ]
+    },
+    elite: {
+      name: "Elite",
+      price: 199,
+      features: [
+        "10 users included ($25/additional user)",
+        "Up to 500 active properties",
+        "Team collaboration tools",
+        "Custom dashboards",
+        "AI-powered pricing strategies",
         "Market Timing AI & Offer Strategies",
         "Office Challenges & Competition Hub",
-        "Priority support & API access"
+        "Custom branding & API access",
+        "Priority support"
+      ]
+    },
+    enterprise: {
+      name: "Enterprise",
+      price: "Custom",
+      features: [
+        "Unlimited users & properties",
+        "Multi-office analytics",
+        "White-label branding",
+        "Dedicated account manager",
+        "Custom integrations",
+        "Advanced reporting",
+        "Priority phone support",
+        "Custom training & SLA"
       ]
     }
   };

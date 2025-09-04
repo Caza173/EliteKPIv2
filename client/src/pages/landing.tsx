@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { BarChart3, TrendingUp, Target, Calculator, Shield, Mail } from "lucide-react";
+import { BarChart3, TrendingUp, Target, Calculator, Shield, Mail, ArrowRight, Star } from "lucide-react";
 import { Link } from "wouter";
 import TraditionalLogin from "@/components/auth/traditional-login";
 
@@ -87,6 +87,21 @@ export default function Landing() {
             >
               Email Login
             </Button>
+          </div>
+          
+          {/* Free Tool CTA */}
+          <div className="mt-8">
+            <Link href="/efficiency-calculator">
+              <Button 
+                size="lg" 
+                variant="secondary"
+                className="bg-gradient-to-r from-blue-100 to-purple-100 text-blue-700 border-blue-200 hover:from-blue-200 hover:to-purple-200"
+              >
+                <Calculator className="h-5 w-5 mr-2" />
+                Free Efficiency Calculator
+                <ArrowRight className="h-4 w-4 ml-2" />
+              </Button>
+            </Link>
           </div>
         </div>
 
@@ -221,6 +236,53 @@ export default function Landing() {
                     <p className="text-gray-600">Quick commission calculations for prospects</p>
                   </div>
                 </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Free Efficiency Calculator Section */}
+        <div className="mt-20">
+          <div className="bg-gradient-to-r from-green-50 to-blue-50 rounded-xl p-8 border border-green-200">
+            <div className="flex flex-col lg:flex-row items-center justify-between">
+              <div className="lg:w-2/3 mb-6 lg:mb-0">
+                <div className="flex items-center mb-4">
+                  <Calculator className="h-8 w-8 text-green-600 mr-3" />
+                  <h2 className="text-3xl font-bold text-gray-900">Free Efficiency Calculator</h2>
+                </div>
+                <p className="text-xl text-gray-600 mb-4">
+                  Discover your real estate efficiency score and get personalized recommendations to boost your performance.
+                </p>
+                <ul className="space-y-2 text-gray-700">
+                  <li className="flex items-center">
+                    <Star className="h-5 w-5 text-yellow-500 mr-2" />
+                    Calculate your closing rate and call efficiency
+                  </li>
+                  <li className="flex items-center">
+                    <Star className="h-5 w-5 text-yellow-500 mr-2" />
+                    Get personalized improvement recommendations
+                  </li>
+                  <li className="flex items-center">
+                    <Star className="h-5 w-5 text-yellow-500 mr-2" />
+                    Compare against industry benchmarks
+                  </li>
+                  <li className="flex items-center">
+                    <Star className="h-5 w-5 text-yellow-500 mr-2" />
+                    No signup required - completely free
+                  </li>
+                </ul>
+              </div>
+              <div className="lg:w-1/3 text-center lg:text-right">
+                <Link href="/efficiency-calculator">
+                  <Button 
+                    size="lg" 
+                    className="bg-green-600 hover:bg-green-700 text-white px-8 py-4 text-lg"
+                  >
+                    Try Free Calculator
+                    <ArrowRight className="h-5 w-5 ml-2" />
+                  </Button>
+                </Link>
+                <p className="text-sm text-gray-500 mt-2">Takes less than 2 minutes</p>
               </div>
             </div>
           </div>

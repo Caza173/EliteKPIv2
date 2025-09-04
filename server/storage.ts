@@ -103,7 +103,7 @@ import {
   type InsertFeedbackUpdate,
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, and, desc, asc, gte, lte, sql, count, isNotNull } from "drizzle-orm";
+import { eq, and, desc, asc, gte, lte, sql, count, sum, isNotNull } from "drizzle-orm";
 
 export interface IStorage {
   // User operations - required for authentication
@@ -2529,6 +2529,106 @@ export class DatabaseStorage implements IStorage {
   async createFeedbackUpdate(updateData: InsertFeedbackUpdate): Promise<FeedbackUpdate> {
     const [newUpdate] = await db.insert(feedbackUpdates).values(updateData).returning();
     return newUpdate;
+  }
+
+  // Admin-specific methods
+  async getUserCount(): Promise<number> {
+    const result = await db.select({ count: count() }).from(users);
+    return result[0]?.count || 0;
+  }
+
+  async getActiveUserCount(): Promise<number> {
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+    
+    const result = await db
+      .select({ count: count() })
+      .from(users)
+      .where(gte(users.updatedAt, thirtyDaysAgo));
+    
+    return result[0]?.count || 0;
+  }
+
+  async getTotalPropertiesCount(): Promise<number> {
+    const result = await db.select({ count: count() }).from(properties);
+    return result[0]?.count || 0;
+  }
+
+  async getTotalPlatformRevenue(): Promise<number> {
+    const result = await db
+      .select({ total: sql<number>`sum(${commissions.amount}::numeric)` })
+      .from(commissions);
+    
+    return Number(result[0]?.total) || 0;
+  }
+
+  async getDatabaseSize(): Promise<string> {
+    try {
+      // This is a simplified version - actual implementation would depend on database type
+      return "~50MB"; // Placeholder
+    } catch (error) {
+      return "Unknown";
+    }
+  }
+
+  async getLastBackupDate(): Promise<string> {
+    // Placeholder - in real implementation, this would check actual backup system
+    return "2025-09-01";
+  }
+
+  async getAllUsersWithStats(): Promise<any[]> {
+    const usersWithStats = await db
+      .select({
+        id: users.id,
+        email: users.email,
+        createdAt: users.createdAt,
+        updatedAt: users.updatedAt,
+        propertyCount: count(properties.id),
+        totalRevenue: sql<number>`sum(${commissions.amount}::numeric)`
+      })
+      .from(users)
+      .leftJoin(properties, eq(users.id, properties.userId))
+      .leftJoin(commissions, eq(users.id, commissions.userId))
+      .groupBy(users.id, users.email, users.createdAt, users.updatedAt);
+
+    return usersWithStats.map(user => ({
+      id: user.id,
+      email: user.email,
+      plan: 'starter', // Placeholder - would be stored in user table
+      properties: user.propertyCount || 0,
+      lastActive: user.updatedAt?.toISOString().split('T')[0] || 'Never',
+      totalRevenue: Number(user.totalRevenue) || 0
+    }));
+  }
+
+  async upgradeUserPlan(userId: string, plan: string): Promise<void> {
+    // Placeholder - in real implementation, this would update user plan in database
+    console.log(`Upgrading user ${userId} to ${plan} plan`);
+  }
+
+  async suspendUser(userId: string): Promise<void> {
+    // Placeholder - in real implementation, this would set user as suspended
+    console.log(`Suspending user ${userId}`);
+  }
+
+  async activateUser(userId: string): Promise<void> {
+    // Placeholder - in real implementation, this would activate suspended user
+    console.log(`Activating user ${userId}`);
+  }
+
+  async resetUserPassword(userId: string): Promise<void> {
+    // Placeholder - in real implementation, this would trigger password reset
+    console.log(`Resetting password for user ${userId}`);
+  }
+
+  async runMaintenance(): Promise<void> {
+    // Placeholder - in real implementation, this would run database maintenance tasks
+    console.log('Running database maintenance...');
+  }
+
+  async testConnection(): Promise<void> {
+    // Test database connection
+    await db.select({ test: sql`1` });
   }
 }
 

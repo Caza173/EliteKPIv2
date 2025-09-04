@@ -3,7 +3,7 @@ export interface PlanLimits {
   users: number;
   properties: number;
   reports: 'Basic' | 'Advanced';
-  support: 'Email' | 'Priority Email';
+  support: 'Email' | 'Priority Email' | 'Priority Support' | 'Dedicated Support';
   additionalUserCost?: number;
 }
 
@@ -95,6 +95,36 @@ export const PLAN_CONFIGS: Record<string, { limits: PlanLimits; features: PlanFe
       offerStrategies: true,
       officeChallenges: true,
       competitionHub: true,
+      customBranding: false, // Not available in professional
+      priorityEmailSupport: true,
+      apiAccess: false, // Not available in professional
+      additionalUsers: true
+    }
+  },
+  elite: {
+    limits: {
+      users: 10,
+      properties: 500,
+      additionalUserCost: 25,
+      reports: 'Advanced',
+      support: 'Priority Support'
+    },
+    features: {
+      // All professional features plus elite features
+      contactManagement: true,
+      expenseTracking: true,
+      timeLogging: true,
+      dashboardOverview: true,
+      emailSupport: true,
+      basicReports: true,
+      basicCMA: true,
+      comprehensivePropertyPipeline: true,
+      advancedCMA: true,
+      performanceAnalytics: true,
+      marketTimingAI: true,
+      offerStrategies: true,
+      officeChallenges: true,
+      competitionHub: true,
       customBranding: true,
       priorityEmailSupport: true,
       apiAccess: true,
@@ -106,7 +136,7 @@ export const PLAN_CONFIGS: Record<string, { limits: PlanLimits; features: PlanFe
       users: 999999,
       properties: 999999,
       reports: 'Advanced',
-      support: 'Priority Email'
+      support: 'Dedicated Support'
     },
     features: {
       // All features enabled for enterprise/admin
@@ -132,32 +162,24 @@ export const PLAN_CONFIGS: Record<string, { limits: PlanLimits; features: PlanFe
   }
 };
 
-// Default plan for users without subscription
-export const DEFAULT_PLAN = 'starter';
+// Default plan for users without subscription (admin-controls branch: always enterprise)
+export const DEFAULT_PLAN = 'enterprise';
 
-// Helper function to get plan features
+// Helper function to get plan features (admin-controls branch: always enterprise)
 export function getPlanFeatures(planId: string): PlanFeatures {
-  return PLAN_CONFIGS[planId]?.features || PLAN_CONFIGS[DEFAULT_PLAN].features;
+  return PLAN_CONFIGS['enterprise']?.features || PLAN_CONFIGS['enterprise'].features;
 }
 
-// Helper function to get plan limits
+// Helper function to get plan limits (admin-controls branch: always enterprise)
 export function getPlanLimits(planId: string): PlanLimits {
-  return PLAN_CONFIGS[planId]?.limits || PLAN_CONFIGS[DEFAULT_PLAN].limits;
+  return PLAN_CONFIGS['enterprise']?.limits || PLAN_CONFIGS['enterprise'].limits;
 }
 
-// Feature checking functions
+// Feature checking functions (admin-controls branch: always return true)
 export function hasFeature(planId: string, feature: keyof PlanFeatures): boolean {
-  const features = getPlanFeatures(planId);
-  return features[feature];
+  return true; // Always enabled in admin-controls branch
 }
 
 export function canExceedLimit(planId: string, limitType: keyof PlanLimits, currentValue: number): boolean {
-  const limits = getPlanLimits(planId);
-  const limit = limits[limitType];
-  
-  if (typeof limit === 'number') {
-    return currentValue < limit;
-  }
-  
-  return true; // For non-numeric limits
+  return true; // Always allow in admin-controls branch
 }

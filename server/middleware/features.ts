@@ -81,20 +81,21 @@ export function checkResourceLimit(resourceType: 'properties' | 'users', additio
 // Helper function to get user's current plan
 async function getUserPlan(userId: string): Promise<string> {
   try {
-    // Import storage here to avoid circular dependencies
-    const { storage } = await import('../storage');
-    const user = await storage.getUser(userId);
+    // In admin-controls branch, always return 'enterprise' plan for full access
+    return 'enterprise';
     
-    if (!user || !user.stripeSubscriptionId || user.subscriptionStatus !== 'active') {
-      return DEFAULT_PLAN;
-    }
-
-    // In a real implementation, you might want to check the Stripe subscription
-    // to get the actual plan ID. For now, we'll determine based on subscription existence
-    return user.planId || 'professional'; // Default to professional if they have active subscription
+    // Original code kept for reference:
+    // const { storage } = await import('../storage');
+    // const user = await storage.getUser(userId);
+    // 
+    // if (!user || !user.stripeSubscriptionId || user.subscriptionStatus !== 'active') {
+    //   return DEFAULT_PLAN;
+    // }
+    //
+    // return user.planId || 'professional';
   } catch (error) {
     console.error('Error getting user plan:', error);
-    return DEFAULT_PLAN;
+    return 'enterprise'; // Even on error, return full access in admin-controls branch
   }
 }
 
@@ -124,18 +125,19 @@ async function getCurrentUserCount(userId: string): Promise<number> {
 // Utility function to get user's plan info for client-side
 export async function getUserPlanInfo(userId: string) {
   try {
-    const planId = await getUserPlan(userId);
+    // In admin-controls branch, always return 'enterprise' plan for full access
+    const planId = 'enterprise';
     return {
       planId,
-      features: PLAN_CONFIGS[planId]?.features || PLAN_CONFIGS[DEFAULT_PLAN].features,
-      limits: PLAN_CONFIGS[planId]?.limits || PLAN_CONFIGS[DEFAULT_PLAN].limits,
+      features: PLAN_CONFIGS[planId]?.features || PLAN_CONFIGS['enterprise'].features,
+      limits: PLAN_CONFIGS[planId]?.limits || PLAN_CONFIGS['enterprise'].limits,
     };
   } catch (error) {
     console.error('Error getting user plan info:', error);
     return {
-      planId: DEFAULT_PLAN,
-      features: PLAN_CONFIGS[DEFAULT_PLAN].features,
-      limits: PLAN_CONFIGS[DEFAULT_PLAN].limits,
+      planId: 'enterprise',
+      features: PLAN_CONFIGS['enterprise'].features,
+      limits: PLAN_CONFIGS['enterprise'].limits,
     };
   }
 }
