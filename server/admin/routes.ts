@@ -156,6 +156,74 @@ router.post('/maintenance', async (req, res) => {
   }
 });
 
+// System diagnostics endpoint
+router.post('/system/diagnostics', async (req, res) => {
+  try {
+    const storage = new DatabaseStorage();
+    
+    const diagnostics = {
+      timestamp: new Date().toISOString(),
+      results: [] as string[]
+    };
+    
+    // Test database connection
+    try {
+      await storage.testConnection();
+      diagnostics.results.push('✓ Database connection: OK');
+    } catch (error) {
+      diagnostics.results.push('✗ Database connection: FAILED');
+    }
+    
+    // Test external APIs availability
+    try {
+      // Check if API keys are configured
+      if (process.env.OPENAI_API_KEY) {
+        diagnostics.results.push('✓ OpenAI API: Configured');
+      } else {
+        diagnostics.results.push('⚠ OpenAI API: Not configured');
+      }
+      
+      if (process.env.ATTOM_API_KEY) {
+        diagnostics.results.push('✓ ATTOM Data API: Configured');
+      } else {
+        diagnostics.results.push('⚠ ATTOM Data API: Not configured');
+      }
+      
+      if (process.env.STRIPE_SECRET_KEY) {
+        diagnostics.results.push('✓ Stripe Integration: Configured');
+      } else {
+        diagnostics.results.push('⚠ Stripe Integration: Not configured');
+      }
+    } catch (error) {
+      diagnostics.results.push('✗ API configuration check: FAILED');
+    }
+    
+    // Check system resources
+    try {
+      const memUsage = process.memoryUsage();
+      const memUsageMB = Math.round(memUsage.heapUsed / 1024 / 1024);
+      diagnostics.results.push(`✓ Memory usage: ${memUsageMB}MB`);
+      
+      diagnostics.results.push(`✓ Node.js version: ${process.version}`);
+      diagnostics.results.push(`✓ Uptime: ${Math.round(process.uptime())}s`);
+    } catch (error) {
+      diagnostics.results.push('✗ System resources check: FAILED');
+    }
+    
+    const message = `System Diagnostics Report\n${diagnostics.results.join('\n')}`;
+    
+    res.json({ 
+      success: true, 
+      message,
+      diagnostics,
+      timestamp: diagnostics.timestamp
+    });
+  } catch (error) {
+    console.error('Error running system diagnostics:', error);
+    res.status(500).json({ error: 'Failed to run system diagnostics' });
+  }
+});
+
 // System health check
 async function checkSystemHealth() {
   try {

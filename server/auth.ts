@@ -16,14 +16,29 @@ const mockUser: User = {
   isAdmin: true
 };
 
+// Track logout state in development
+let isLoggedOut = false;
+
 // Setup authentication middleware
 export function setupAuth(app: Express) {
   // Simple session-like middleware for development
   app.use((req: Request, res: Response, next: NextFunction) => {
-    // Add user to request for development
-    (req as any).user = mockUser;
+    // Don't add user if logged out
+    if (!isLoggedOut) {
+      (req as any).user = mockUser;
+    }
     next();
   });
+}
+
+// Logout function for development
+export function logout() {
+  isLoggedOut = true;
+}
+
+// Login function for development  
+export function login() {
+  isLoggedOut = false;
 }
 
 // Check if user is authenticated

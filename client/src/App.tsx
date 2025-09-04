@@ -38,6 +38,7 @@ import AdminDashboard from "@/pages/admin-dashboard";
 import AdminUsersPage from "@/pages/admin-users";
 import AdminDashboardNew from "@/pages/admin/dashboard";
 import AdminSettings from "@/pages/admin/settings";
+import EfficiencyCalculator from "@/pages/efficiency-calculator";
 import AppLayout from "@/components/layout/app-layout";
 import { Trophy } from "lucide-react";
 
@@ -159,6 +160,7 @@ function Router() {
       ) : !isAuthenticated ? (
         <>
           <Route path="/" component={Landing} />
+          <Route path="/efficiency-calculator" component={EfficiencyCalculator} />
           <Route path="/settings" component={Landing} />
           <Route component={Landing} />
         </>

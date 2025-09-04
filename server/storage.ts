@@ -2556,7 +2556,7 @@ export class DatabaseStorage implements IStorage {
 
   async getTotalPlatformRevenue(): Promise<number> {
     const result = await db
-      .select({ total: sum(commissions.grossCommission) })
+      .select({ total: sql<number>`sum(${commissions.amount}::numeric)` })
       .from(commissions);
     
     return Number(result[0]?.total) || 0;
@@ -2584,7 +2584,7 @@ export class DatabaseStorage implements IStorage {
         createdAt: users.createdAt,
         updatedAt: users.updatedAt,
         propertyCount: count(properties.id),
-        totalRevenue: sum(commissions.grossCommission)
+        totalRevenue: sql<number>`sum(${commissions.amount}::numeric)`
       })
       .from(users)
       .leftJoin(properties, eq(users.id, properties.userId))

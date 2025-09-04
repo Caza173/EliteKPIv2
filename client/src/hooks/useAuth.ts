@@ -46,17 +46,13 @@ export const useAuth = (): UseAuthResult => {
 
   const logout = async (): Promise<void> => {
     try {
-      // Call the logout endpoint
-      await fetch('/api/logout', {
-        method: 'GET',
-        credentials: 'include'
-      });
-    } catch (error) {
-      console.error('Logout API error:', error);
-    } finally {
       // Clear all React Query cache
       queryClient.clear();
-      // Redirect to home
+      // Redirect to logout endpoint which will handle the logout and redirect to home
+      window.location.href = '/api/logout';
+    } catch (error) {
+      console.error('Logout error:', error);
+      // Fallback - redirect to home anyway
       window.location.href = '/';
     }
   };

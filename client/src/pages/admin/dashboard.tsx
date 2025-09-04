@@ -3,7 +3,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Users, Database, Settings, Activity, AlertTriangle, TrendingUp } from 'lucide-react';
+import { Users, Database, Settings, Activity, AlertTriangle, TrendingUp, ArrowLeft } from 'lucide-react';
+import { useLocation } from 'wouter';
 
 interface AdminStats {
   totalUsers: number;
@@ -28,6 +29,7 @@ export default function AdminDashboard() {
   const [stats, setStats] = useState<AdminStats | null>(null);
   const [users, setUsers] = useState<UserData[]>([]);
   const [loading, setLoading] = useState(true);
+  const [, setLocation] = useLocation();
 
   useEffect(() => {
     fetchAdminData();
@@ -64,10 +66,32 @@ export default function AdminDashboard() {
     }
   };
 
+  const handleSystemDiagnostics = async () => {
+    try {
+      const response = await fetch('/api/admin/system/diagnostics', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+      });
+      const result = await response.json();
+      
+      if (response.ok) {
+        alert(`System Diagnostics Complete!\n\n${result.message || 'All systems checked successfully.'}`);
+      } else {
+        alert(`Diagnostics Error: ${result.error || 'Failed to run diagnostics'}`);
+      }
+      
+      // Refresh admin data to update any status changes
+      fetchAdminData();
+    } catch (error) {
+      console.error('Error running system diagnostics:', error);
+      alert('Failed to run system diagnostics. Please try again.');
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="text-lg">Loading admin dashboard...</div>
+        <div className="text-lg text-black">Loading admin dashboard...</div>
       </div>
     );
   }
@@ -75,7 +99,18 @@ export default function AdminDashboard() {
   return (
     <div className="space-y-6 p-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold">Admin Dashboard</h1>
+        <div className="flex items-center gap-4">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setLocation('/')}
+            className="flex items-center gap-2"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Back to Dashboard
+          </Button>
+          <h1 className="text-3xl font-bold text-black">Admin Dashboard</h1>
+        </div>
         <Badge variant={stats?.systemHealth === 'good' ? 'default' : 'destructive'}>
           System Status: {stats?.systemHealth}
         </Badge>
@@ -85,11 +120,11 @@ export default function AdminDashboard() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Users</CardTitle>
+            <CardTitle className="text-sm font-medium text-black">Total Users</CardTitle>
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats?.totalUsers || 0}</div>
+            <div className="text-2xl font-bold text-black">{stats?.totalUsers || 0}</div>
             <p className="text-xs text-muted-foreground">
               {stats?.activeUsers || 0} active this month
             </p>
@@ -98,33 +133,33 @@ export default function AdminDashboard() {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Properties</CardTitle>
+            <CardTitle className="text-sm font-medium text-black">Total Properties</CardTitle>
             <Database className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats?.totalProperties || 0}</div>
+            <div className="text-2xl font-bold text-black">{stats?.totalProperties || 0}</div>
             <p className="text-xs text-muted-foreground">Across all users</p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
+            <CardTitle className="text-sm font-medium text-black">Total Revenue</CardTitle>
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">${stats?.totalRevenue?.toLocaleString() || 0}</div>
+            <div className="text-2xl font-bold text-black">${stats?.totalRevenue?.toLocaleString() || 0}</div>
             <p className="text-xs text-muted-foreground">Platform-wide</p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Database Size</CardTitle>
+            <CardTitle className="text-sm font-medium text-black">Database Size</CardTitle>
             <Database className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats?.databaseSize || 'N/A'}</div>
+            <div className="text-2xl font-bold text-black">{stats?.databaseSize || 'N/A'}</div>
             <p className="text-xs text-muted-foreground">
               Last backup: {stats?.lastBackup || 'Never'}
             </p>
@@ -192,29 +227,29 @@ export default function AdminDashboard() {
         <TabsContent value="system" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>System Health</CardTitle>
-              <CardDescription>Monitor system performance and health</CardDescription>
+              <CardTitle className="text-black">System Health</CardTitle>
+              <CardDescription className="text-black">Monitor system performance and health</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
-                  <span>Database Connection</span>
-                  <Badge variant="default">✓ Connected</Badge>
+                  <span className="text-black">Database Connection</span>
+                  <Badge variant="secondary" className="bg-green-100 text-green-800 border-green-300">✓ Connected</Badge>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span>OpenAI API</span>
-                  <Badge variant="default">✓ Active</Badge>
+                  <span className="text-black">OpenAI API</span>
+                  <Badge variant="secondary" className="bg-green-100 text-green-800 border-green-300">✓ Active</Badge>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span>ATTOM Data API</span>
-                  <Badge variant="default">✓ Active</Badge>
+                  <span className="text-black">ATTOM Data API</span>
+                  <Badge variant="secondary" className="bg-green-100 text-green-800 border-green-300">✓ Active</Badge>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span>Stripe Integration</span>
-                  <Badge variant="default">✓ Connected</Badge>
+                  <span className="text-black">Stripe Integration</span>
+                  <Badge variant="secondary" className="bg-green-100 text-green-800 border-green-300">✓ Connected</Badge>
                 </div>
                 <div className="mt-4">
-                  <Button className="w-full">Run System Diagnostics</Button>
+                  <Button className="w-full" onClick={handleSystemDiagnostics}>Run System Diagnostics</Button>
                 </div>
               </div>
             </CardContent>

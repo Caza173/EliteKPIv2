@@ -7,10 +7,11 @@ import { generateMarketData, getLocationByZipcode, NH_ZIPCODES, getMarketData } 
 import { attomAPI } from "./attom-api";
 import { ACHIEVEMENTS, calculateAchievementProgress, calculateAgentLevel, updatePerformanceStreaks } from "./achievements";
 import sgMail from '@sendgrid/mail';
-import { setupAuth, isAuthenticated, isAdminAuthenticated } from "./auth";
+import { setupAuth, isAuthenticated, isAdminAuthenticated, logout } from "./auth";
 import { aiStrategyService } from "./ai-strategies";
 import { offerStrategyService } from "./offer-strategies";
 import { hashPassword, verifyPassword, validatePasswordStrength } from './utils/auth';
+import adminRoutes from './admin/routes';
 import OpenAI from "openai";
 import {
   insertPropertySchema,
@@ -747,6 +748,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // GET logout route for development - redirects to home after logout
+  app.get('/api/logout', async (req: any, res) => {
+    try {
+      // Call logout function to clear authentication state
+      logout();
+      
+      // Redirect to home page
+      res.redirect('/');
+    } catch (error) {
+      console.error("Error during logout:", error);
+      // Fallback - still redirect to home
+      res.redirect('/');
+    }
+  });
+
   // Update user settings
   app.patch('/api/auth/user', isAuthenticated, async (req: any, res) => {
     try {
@@ -859,12 +875,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
-      // Define plan pricing with amounts for creating prices
+      // Define plan pricing with amounts for creating prices (based on $100M money model)
       const planPricing = {
-        starter: { amount: 2900, name: 'EliteKPI Starter Plan' },
-        professional: { amount: 6900, name: 'EliteKPI Professional Plan' },
-        elite: { amount: 19900, name: 'EliteKPI Elite Plan' },
-        enterprise: { amount: 19900, name: 'EliteKPI Enterprise Plan' }
+        starter: { amount: 2900, name: 'EliteKPI Starter Plan' }, // $29/mo
+        professional: { amount: 7900, name: 'EliteKPI Professional Plan' }, // $79/mo
+        elite: { amount: 19900, name: 'EliteKPI Elite Plan' }, // $199/mo
+        enterprise: { amount: 50000, name: 'EliteKPI Enterprise Plan' } // $500/mo (will be custom pricing)
       };
 
       const selectedPlan = planPricing[planId as keyof typeof planPricing] || planPricing.professional;
@@ -939,47 +955,132 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get subscription plans endpoint
+  app.get('/api/subscription-plans', async (req, res) => {
+    try {
+      // Return the hardcoded plans based on our $100M money model
+      const plans = [
+        {
+          id: 'starter',
+          name: 'Starter',
+          price: 29,
+          yearlyPrice: 290,
+          description: 'Perfect for individual agents just getting started.',
+          features: [
+            '1 user included',
+            'Up to 25 active properties',
+            'Basic performance dashboards',
+            'Property management',
+            'Essential CMA tools',
+            'Email support'
+          ],
+          limits: { users: 1, properties: 25, reports: 'Basic', support: 'Email' },
+          sortOrder: 1,
+          isActive: true
+        },
+        {
+          id: 'professional',
+          name: 'Professional',
+          price: 79,
+          yearlyPrice: 790,
+          description: 'For established agents and small teams.',
+          features: [
+            '3 users included ($15/additional user)',
+            'Up to 100 active properties',
+            'Advanced analytics & automation',
+            'Leaderboards & goal tracking',
+            'Performance analytics',
+            'Advanced CMAs',
+            'Priority email support'
+          ],
+          limits: { users: 3, properties: 100, additionalUserCost: 15, reports: 'Advanced', support: 'Priority Email' },
+          sortOrder: 2,
+          isActive: true,
+          popular: true
+        },
+        {
+          id: 'elite',
+          name: 'Elite',
+          price: 199,
+          yearlyPrice: 1990,
+          description: 'For high-performing agents and teams.',
+          features: [
+            '10 users included ($25/additional user)',
+            'Up to 500 active properties',
+            'Team collaboration tools',
+            'Custom dashboards',
+            'AI-powered pricing strategies',
+            'Market Timing AI & Offer Strategies',
+            'Office Challenges & Competition Hub',
+            'Custom branding & API access',
+            'Priority support'
+          ],
+          limits: { users: 10, properties: 500, additionalUserCost: 25, reports: 'Advanced', support: 'Priority Support' },
+          sortOrder: 3,
+          isActive: true
+        },
+        {
+          id: 'enterprise',
+          name: 'Enterprise',
+          price: null,
+          yearlyPrice: null,
+          description: 'For brokerages and large teams.',
+          features: [
+            'Unlimited users & properties',
+            'Multi-office analytics',
+            'White-label branding',
+            'Dedicated account manager',
+            'Custom integrations',
+            'Advanced reporting',
+            'Priority phone support',
+            'Custom training & SLA'
+          ],
+          limits: { users: -1, properties: -1, reports: 'Advanced', support: 'Dedicated Support' },
+          sortOrder: 4,
+          isActive: true
+        }
+      ];
+      res.json(plans);
+    } catch (error) {
+      console.error('Error fetching subscription plans:', error);
+      res.status(500).json({ error: 'Failed to fetch subscription plans' });
+    }
+  });
+
   app.get('/api/subscription-status', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.id;
-      const user = await storage.getUser(userId);
-
-      if (!user || !user.stripeSubscriptionId) {
-        return res.json({ 
-          status: 'no_subscription',
-          planId: 'starter'
-        });
-      }
-
-      const subscription = await stripe.subscriptions.retrieve(user.stripeSubscriptionId);
-      console.log('Subscription status from Stripe:', subscription.status);
-      console.log('Subscription status from DB:', user.subscriptionStatus);
-      
-      // Sync local status with Stripe if there's a mismatch
-      if (user.subscriptionStatus !== subscription.status) {
-        console.log('Syncing subscription status from Stripe to local DB');
-        await storage.upsertUser({
-          ...user,
-          subscriptionStatus: subscription.status,
-        });
-      }
-      
-      // Determine plan from subscription
-      let planId = 'starter';
-      if (subscription.status === 'active') {
-        planId = user.planId || 'professional';
-      }
-      
+      // In admin-controls branch, always return enterprise-level access
       res.json({
-        status: subscription.status,
-        current_period_end: subscription.current_period_end,
-        cancel_at_period_end: subscription.cancel_at_period_end,
-        plan: subscription.items.data[0]?.price?.nickname || 'Professional',
-        planId: planId,
+        status: 'active',
+        current_period_end: Math.floor(Date.now() / 1000) + (365 * 24 * 60 * 60), // 1 year from now
+        cancel_at_period_end: false,
+        plan: 'Enterprise (Admin Access)',
+        planId: 'enterprise',
       });
+      
+      // Original code kept for reference:
+      // const userId = req.user.id;
+      // const user = await storage.getUser(userId);
+      // 
+      // if (!user || !user.stripeSubscriptionId) {
+      //   return res.json({ 
+      //     status: 'no_subscription',
+      //     planId: 'starter'
+      //   });
+      // }
+      //
+      // const subscription = await stripe.subscriptions.retrieve(user.stripeSubscriptionId);
+      // ... rest of original implementation
     } catch (error: any) {
       console.error("Error fetching subscription status:", error);
-      res.status(500).json({ message: "Error fetching subscription status" });
+      // Even on error, return enterprise access in admin-controls branch
+      res.json({
+        status: 'active',
+        current_period_end: Math.floor(Date.now() / 1000) + (365 * 24 * 60 * 60),
+        cancel_at_period_end: false,
+        plan: 'Enterprise (Admin Access)',
+        planId: 'enterprise',
+      });
     }
   });
 
@@ -989,8 +1090,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userId = req.user.id;
       const user = await storage.getUser(userId);
       
-      // Check if user is admin - give them unlimited access
-      const isAdmin = req.user?.isAdmin || false;
+      // In admin-controls branch, always treat as admin with unlimited access
+      const isAdmin = true; // Force admin mode in admin-controls branch
       
       if (isAdmin) {
         // Admin users get unlimited access to everything

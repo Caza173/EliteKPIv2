@@ -1,0 +1,21 @@
+services:
+  - type: web
+    name: elitekpi-app
+    env: node
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        value: YOUR_DATABASE_URL_HERE
+      - key: SESSION_SECRET
+        value: your-super-secret-session-key-change-in-production
+      - key: ATTOM_API_KEY
+        value: YOUR_ATTOM_API_KEY_HERE
+      - key: OPENAI_API_KEY
+        value: YOUR_OPENAI_API_KEY_HERE
+      - key: STRIPE_SECRET_KEY
+        value: YOUR_STRIPE_SECRET_KEY_HERE
+      - key: VITE_STRIPE_PUBLIC_KEY
+        value: YOUR_STRIPE_PUBLIC_KEY_HERE
