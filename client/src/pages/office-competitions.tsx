@@ -325,11 +325,11 @@ export default function OfficeCompetitions() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Active Competitions</CardTitle>
-            <Trophy className="h-4 w-4 text-muted-foreground" />
+            <Trophy className="h-4 w-4 text-gray-500" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{activeCompetitions.length}</div>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-xs text-gray-600">
               Currently running
             </p>
           </CardContent>
@@ -337,13 +337,13 @@ export default function OfficeCompetitions() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Participants</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
+            <Users className="h-4 w-4 text-gray-500" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
               {(competitions as Competition[]).reduce((sum: number, c: Competition) => sum + c.participantCount, 0)}
             </div>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-xs text-gray-600">
               Across all competitions
             </p>
           </CardContent>
@@ -351,11 +351,11 @@ export default function OfficeCompetitions() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Upcoming Competitions</CardTitle>
-            <Calendar className="h-4 w-4 text-muted-foreground" />
+            <Calendar className="h-4 w-4 text-gray-500" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{upcomingCompetitions.length}</div>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-xs text-gray-600">
               Starting soon
             </p>
           </CardContent>
@@ -363,11 +363,11 @@ export default function OfficeCompetitions() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Completed</CardTitle>
-            <Award className="h-4 w-4 text-muted-foreground" />
+            <Award className="h-4 w-4 text-gray-500" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{completedCompetitions.length}</div>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-xs text-gray-600">
               This year
             </p>
           </CardContent>

@@ -264,20 +264,6 @@ export default function AdminSettings() {
 
                 <div className="flex items-center justify-between">
                   <div>
-                    <Label htmlFor="market-timing">Market Timing</Label>
-                    <p className="text-sm text-muted-foreground">
-                      Enable market timing intelligence
-                    </p>
-                  </div>
-                  <Switch
-                    id="market-timing"
-                    checked={config.features.marketTiming}
-                    onCheckedChange={(checked) => updateConfig('features.marketTiming', checked)}
-                  />
-                </div>
-
-                <div className="flex items-center justify-between">
-                  <div>
                     <Label htmlFor="cma-reports">CMA Reports</Label>
                     <p className="text-sm text-muted-foreground">
                       Enable comparative market analysis

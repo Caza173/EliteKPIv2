@@ -109,6 +109,7 @@ export default function TimeEntryModal({ isOpen, onClose, propertyId }: TimeEntr
     "Contract review",
     "Follow-up calls",
     "Marketing activities",
+    "Travel",
   ];
 
   return (

@@ -268,7 +268,6 @@ export default function AdminDashboard() {
                   <strong>Feature Usage:</strong>
                   <ul className="mt-2 space-y-1">
                     <li>• AI Scripts: 245 generated this month</li>
-                    <li>• Market Timing: 189 queries this month</li>
                     <li>• CMA Reports: 156 generated this month</li>
                     <li>• Property Pipeline: 89% adoption rate</li>
                   </ul>

@@ -14,6 +14,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { useAchievementCelebration } from "@/hooks/useAchievementCelebration";
 import AchievementCelebration from "@/components/achievements/achievement-celebration";
+import { BadgeCard } from "@/components/ui/badge-card";
 import { 
   Trophy, 
   Star, 
@@ -531,6 +532,18 @@ export default function CompetitionHub() {
 
         {/* Achievements Tab */}
         <TabsContent value="achievements" className="space-y-6">
+          {/* Achievements Overview */}
+          <section>
+            <h2 className="text-xl font-bold text-black mb-6">Your Achievements</h2>
+            <div className="grid grid-cols-5 gap-4">
+              <BadgeCard tier="Bronze" count={12} progress={75} />
+              <BadgeCard tier="Silver" count={8} progress={45} />
+              <BadgeCard tier="Gold" count={5} progress={20} />
+              <BadgeCard tier="Platinum" count={2} progress={60} />
+              <BadgeCard tier="Diamond" count={1} progress={10} />
+            </div>
+          </section>
+
           {/* Category Filter */}
           <div className="flex flex-wrap gap-2">
             {categoryFilters.map((filter) => (

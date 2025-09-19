@@ -189,12 +189,12 @@ export default function ExpenseAnalysis() {
                             style={{ backgroundColor: color }}
                           ></div>
                           <div>
-                            <div className="text-sm font-medium text-gray-900 dark:text-gray-100">{categoryLabel}</div>
+                            <div className="text-sm font-medium text-black">{categoryLabel}</div>
                             <div className="text-xs text-gray-500 dark:text-gray-400">{expense.count} expense{expense.count !== 1 ? 's' : ''}</div>
                           </div>
                         </div>
                         <div className="text-right">
-                          <div className="text-sm font-bold text-gray-900 dark:text-gray-100">{formatCurrency(expense.total)}</div>
+                          <div className="text-sm font-bold text-black">{formatCurrency(expense.total)}</div>
                           <div className="text-xs text-gray-500 dark:text-gray-400">
                             {totalExpenses > 0 ? Math.round((expense.total / totalExpenses) * 100) : 0}%
                           </div>
@@ -308,12 +308,12 @@ export default function ExpenseAnalysis() {
                             style={{ backgroundColor: `hsl(${Math.abs(expense.propertyId.charCodeAt(0) * 137) % 360}, 70%, 50%)` }}
                           ></div>
                           <div>
-                            <div className="text-sm font-medium text-gray-900 dark:text-gray-100">{expense.propertyAddress}</div>
+                            <div className="text-sm font-medium text-black">{expense.propertyAddress}</div>
                             <div className="text-xs text-gray-500 dark:text-gray-400">{expense.count} expense{expense.count !== 1 ? 's' : ''}</div>
                           </div>
                         </div>
                         <div className="text-right">
-                          <div className="text-sm font-bold text-gray-900 dark:text-gray-100">{formatCurrency(expense.total)}</div>
+                          <div className="text-sm font-bold text-black">{formatCurrency(expense.total)}</div>
                           <div className="text-xs text-gray-500 dark:text-gray-400">
                             {totalExpensesByProperty > 0 ? Math.round((expense.total / totalExpensesByProperty) * 100) : 0}%
                           </div>
@@ -334,7 +334,7 @@ export default function ExpenseAnalysis() {
     <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-6">
       {/* Page Header */}
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">Expense Analysis</h1>
+        <h1 className="text-3xl font-bold text-black mb-2">Expense Analysis</h1>
         <p className="text-gray-600 dark:text-gray-400">Comprehensive breakdown of your business expenses by category and property</p>
       </div>
 
@@ -348,7 +348,7 @@ export default function ExpenseAnalysis() {
               </div>
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Total Expenses</p>
-                <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+                <p className="text-2xl font-bold text-black">
                   {formatCurrency(viewMode === 'category' ? totalExpenses : totalExpensesByProperty)}
                 </p>
               </div>
@@ -364,7 +364,7 @@ export default function ExpenseAnalysis() {
               </div>
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Categories</p>
-                <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{expenses.length}</p>
+                <p className="text-2xl font-bold text-black">{expenses.length}</p>
               </div>
             </div>
           </CardContent>
@@ -378,7 +378,7 @@ export default function ExpenseAnalysis() {
               </div>
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Properties</p>
-                <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{expensesByProperty.length}</p>
+                <p className="text-2xl font-bold text-black">{expensesByProperty.length}</p>
               </div>
             </div>
           </CardContent>
@@ -438,10 +438,10 @@ export default function ExpenseAnalysis() {
                   <div key={expense.id} className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
                     <div className="flex-1">
                       <div className="flex items-center justify-between mb-1">
-                        <h4 className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                        <h4 className="text-sm font-medium text-black">
                           {CATEGORY_LABELS[expense.category as keyof typeof CATEGORY_LABELS] || expense.category}
                         </h4>
-                        <span className="text-sm font-bold text-gray-900 dark:text-gray-100">
+                        <span className="text-sm font-bold text-black">
                           {formatCurrency(expense.amount)}
                         </span>
                       </div>
@@ -469,7 +469,10 @@ export default function ExpenseAnalysis() {
             )}
             
             <div className="flex justify-end mt-6">
-              <Button variant="outline" onClick={() => setShowExpenseModal(false)}>
+              <Button 
+                className="bg-white border-2 border-blue-600 text-black hover:bg-gray-50"
+                onClick={() => setShowExpenseModal(false)}
+              >
                 Close
               </Button>
             </div>

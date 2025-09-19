@@ -8,6 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Switch } from "@/components/ui/switch";
 import { VideoEmbed } from "@/components/ui/video-embed";
 import { videoContent } from "@/data/video-content";
 import { useToast } from "@/hooks/use-toast";
@@ -40,8 +41,30 @@ import {
   Phone,
   Copy,
   Brain,
-  Wand2
+  Wand2,
+  Zap,
+  Lightbulb
 } from "lucide-react";
+
+// Coming Soon Feature Card
+function ComingSoonCard({ title, description, icon }: { title: string; description: string; icon: any }) {
+  const IconComponent = icon;
+  return (
+    <Card className="bg-gradient-to-br from-gray-50 to-gray-100 border border-gray-200 hover:shadow-md transition-all duration-200">
+      <CardContent className="p-6 text-center">
+        <div className="p-3 bg-white rounded-lg inline-flex mb-4">
+          <IconComponent className="h-6 w-6 text-gray-600" />
+        </div>
+        <h3 className="font-semibold text-gray-900 mb-2">{title}</h3>
+        <p className="text-sm text-gray-600 mb-4">{description}</p>
+        <div className="flex items-center justify-center space-x-2">
+          <span className="text-xs text-gray-500">Notify me</span>
+          <Switch />
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
 
 export default function Help() {
   const { toast } = useToast();
@@ -580,11 +603,11 @@ Manage your EliteKPI subscription and billing preferences.
         <Tabs defaultValue="overview" className="w-full">
           <TabsList className="grid w-full grid-cols-7 mb-6">
             <TabsTrigger value="overview">Feature Overview</TabsTrigger>
-            <TabsTrigger value="videos">Video Training</TabsTrigger>
+          
             <TabsTrigger value="training">Written Guides</TabsTrigger>
             <TabsTrigger value="scripts">Sales Scripts</TabsTrigger>
             <TabsTrigger value="advanced">Advanced Tips</TabsTrigger>
-            <TabsTrigger value="feedback">Feedback & Requests</TabsTrigger>
+            <TabsTrigger value="feedback">Feedback</TabsTrigger>
             <TabsTrigger value="complaints">Submit Complaint</TabsTrigger>
           </TabsList>
 
@@ -660,12 +683,12 @@ Manage your EliteKPI subscription and billing preferences.
                   </div>
                   <div>
                     <h4 className="font-semibold text-gray-900 mb-3">Daily Workflow</h4>
-                    <ul className="space-y-2 text-sm text-gray-700">
-                      <li>• Check dashboard for today's priorities</li>
-                      <li>• Update property statuses after client calls</li>
-                      <li>• Log time spent on each activity</li>
-                      <li>• Add expenses as they occur</li>
-                      <li>• Review daily performance metrics</li>
+                    <ul className="list-disc primary-bullets pl-6 space-y-2 text-sm text-gray-700">
+                      <li>Check dashboard for today's priorities</li>
+                      <li>Update property statuses after client calls</li>
+                      <li>Log time spent on each activity</li>
+                      <li>Add expenses as they occur</li>
+                      <li>Review daily performance metrics</li>
                     </ul>
                   </div>
                 </div>
@@ -882,19 +905,19 @@ Manage your EliteKPI subscription and billing preferences.
                     <h4 className="font-semibold mb-3 text-blue-600">Week 2-3: Growth</h4>
                     <ul className="space-y-2 text-sm">
                       <li className="flex items-center gap-2">
-                        <Circle className="h-4 w-4 text-gray-400" />
+                        <Circle className="h-4 w-4 text-primary" />
                         Create first CMA
                       </li>
                       <li className="flex items-center gap-2">
-                        <Circle className="h-4 w-4 text-gray-400" />
+                        <Circle className="h-4 w-4 text-primary" />
                         Track showing activities
                       </li>
                       <li className="flex items-center gap-2">
-                        <Circle className="h-4 w-4 text-gray-400" />
+                        <Circle className="h-4 w-4 text-primary" />
                         Review performance reports
                       </li>
                       <li className="flex items-center gap-2">
-                        <Circle className="h-4 w-4 text-gray-400" />
+                        <Circle className="h-4 w-4 text-primary" />
                         Optimize workflow
                       </li>
                     </ul>
@@ -903,19 +926,19 @@ Manage your EliteKPI subscription and billing preferences.
                     <h4 className="font-semibold mb-3 text-purple-600">Week 4: Mastery</h4>
                     <ul className="space-y-2 text-sm">
                       <li className="flex items-center gap-2">
-                        <Circle className="h-4 w-4 text-gray-400" />
+                        <Circle className="h-4 w-4 text-primary" />
                         Advanced analytics review
                       </li>
                       <li className="flex items-center gap-2">
-                        <Circle className="h-4 w-4 text-gray-400" />
+                        <Circle className="h-4 w-4 text-primary" />
                         Set quarterly goals
                       </li>
                       <li className="flex items-center gap-2">
-                        <Circle className="h-4 w-4 text-gray-400" />
+                        <Circle className="h-4 w-4 text-primary" />
                         Customize dashboard
                       </li>
                       <li className="flex items-center gap-2">
-                        <Circle className="h-4 w-4 text-gray-400" />
+                        <Circle className="h-4 w-4 text-primary" />
                         Invite team members
                       </li>
                     </ul>
@@ -1184,7 +1207,7 @@ Manage your EliteKPI subscription and billing preferences.
               <CardContent className="space-y-4">
                 <div>
                   <h4 className="font-semibold mb-2">Maximizing Conversion Rates</h4>
-                  <ul className="list-disc pl-6 space-y-1 text-sm text-gray-600">
+                  <ul className="list-disc primary-bullets pl-6 space-y-1 text-sm text-gray-600">
                     <li>Follow up with clients within 24 hours of showings</li>
                     <li>Track detailed feedback to understand client preferences</li>
                     <li>Use CMA data to justify pricing recommendations</li>
@@ -1193,7 +1216,7 @@ Manage your EliteKPI subscription and billing preferences.
                 </div>
                 <div>
                   <h4 className="font-semibold mb-2">Financial Optimization</h4>
-                  <ul className="list-disc pl-6 space-y-1 text-sm text-gray-600">
+                  <ul className="list-disc primary-bullets pl-6 space-y-1 text-sm text-gray-600">
                     <li>Track all business expenses for tax deductions</li>
                     <li>Use mileage tracking for accurate vehicle expense claims</li>
                     <li>Set aside percentage of commissions for taxes</li>
@@ -1202,7 +1225,7 @@ Manage your EliteKPI subscription and billing preferences.
                 </div>
                 <div>
                   <h4 className="font-semibold mb-2">Workflow Efficiency</h4>
-                  <ul className="list-disc pl-6 space-y-1 text-sm text-gray-600">
+                  <ul className="list-disc primary-bullets pl-6 space-y-1 text-sm text-gray-600">
                     <li>Use Quick Actions on dashboard for rapid data entry</li>
                     <li>Set goals monthly and track progress weekly</li>
                     <li>Review performance insights regularly for optimization</li>
@@ -1283,27 +1306,27 @@ Manage your EliteKPI subscription and billing preferences.
                 <CardContent className="space-y-4">
                   <div>
                     <h4 className="font-semibold mb-2 text-green-600">Feature Requests</h4>
-                    <ul className="text-sm text-gray-600 space-y-1">
-                      <li>• Describe the business problem you're trying to solve</li>
-                      <li>• Explain how the feature would improve your workflow</li>
-                      <li>• Include any specific requirements or constraints</li>
+                    <ul className="list-disc primary-bullets pl-6 text-sm text-gray-600 space-y-1">
+                      <li>Describe the business problem you're trying to solve</li>
+                      <li>Explain how the feature would improve your workflow</li>
+                      <li>Include any specific requirements or constraints</li>
                     </ul>
                   </div>
                   <div>
                     <h4 className="font-semibold mb-2 text-blue-600">Bug Reports</h4>
-                    <ul className="text-sm text-gray-600 space-y-1">
-                      <li>• Describe what you expected to happen</li>
-                      <li>• Explain what actually happened</li>
-                      <li>• Include steps to reproduce the issue</li>
-                      <li>• Mention your browser and operating system</li>
+                    <ul className="list-disc primary-bullets pl-6 text-sm text-gray-600 space-y-1">
+                      <li>Describe what you expected to happen</li>
+                      <li>Explain what actually happened</li>
+                      <li>Include steps to reproduce the issue</li>
+                      <li>Mention your browser and operating system</li>
                     </ul>
                   </div>
                   <div>
                     <h4 className="font-semibold mb-2 text-purple-600">Response Times</h4>
-                    <ul className="text-sm text-gray-600 space-y-1">
-                      <li>• Bug reports: 1-2 business days</li>
-                      <li>• Feature requests: 3-5 business days</li>
-                      <li>• Integration requests: 1-2 weeks</li>
+                    <ul className="list-disc primary-bullets pl-6 text-sm text-gray-600 space-y-1">
+                      <li>Bug reports: 1-2 business days</li>
+                      <li>Feature requests: 3-5 business days</li>
+                      <li>Integration requests: 1-2 weeks</li>
                     </ul>
                   </div>
                   <div className="bg-blue-50 p-3 rounded-lg">
@@ -1408,29 +1431,29 @@ Manage your EliteKPI subscription and billing preferences.
                 <CardContent className="space-y-4">
                   <div>
                     <h4 className="font-semibold mb-2 text-red-600">What Happens Next?</h4>
-                    <ul className="text-sm text-gray-600 space-y-1">
-                      <li>• Your complaint is immediately logged in our system</li>
-                      <li>• You'll receive an acknowledgment email within 1 hour</li>
-                      <li>• Our support team will investigate the issue</li>
-                      <li>• We'll provide updates on resolution progress</li>
+                    <ul className="list-disc primary-bullets pl-6 text-sm text-gray-600 space-y-1">
+                      <li>Your complaint is immediately logged in our system</li>
+                      <li>You'll receive an acknowledgment email within 1 hour</li>
+                      <li>Our support team will investigate the issue</li>
+                      <li>We'll provide updates on resolution progress</li>
                     </ul>
                   </div>
                   <div>
                     <h4 className="font-semibold mb-2 text-orange-600">Response Times</h4>
-                    <ul className="text-sm text-gray-600 space-y-1">
-                      <li>• Urgent: Within 2 hours</li>
-                      <li>• High Priority: Within 4 hours</li>
-                      <li>• Medium Priority: Within 24 hours</li>
-                      <li>• Low Priority: Within 72 hours</li>
+                    <ul className="list-disc primary-bullets pl-6 text-sm text-gray-600 space-y-1">
+                      <li>Urgent: Within 2 hours</li>
+                      <li>High Priority: Within 4 hours</li>
+                      <li>Medium Priority: Within 24 hours</li>
+                      <li>Low Priority: Within 72 hours</li>
                     </ul>
                   </div>
                   <div>
                     <h4 className="font-semibold mb-2 text-blue-600">Resolution Process</h4>
-                    <ul className="text-sm text-gray-600 space-y-1">
-                      <li>• Investigation and root cause analysis</li>
-                      <li>• Implementation of fix or workaround</li>
-                      <li>• Communication of resolution steps</li>
-                      <li>• Follow-up to ensure satisfaction</li>
+                    <ul className="list-disc primary-bullets pl-6 text-sm text-gray-600 space-y-1">
+                      <li>Investigation and root cause analysis</li>
+                      <li>Implementation of fix or workaround</li>
+                      <li>Communication of resolution steps</li>
+                      <li>Follow-up to ensure satisfaction</li>
                     </ul>
                   </div>
                   <div className="bg-red-50 p-3 rounded-lg">
@@ -1449,44 +1472,6 @@ Manage your EliteKPI subscription and billing preferences.
           </TabsContent>
         </Tabs>
 
-        {/* Key Calculations Reference */}
-        <Card className="mt-8">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Calculator className="h-5 w-5" />
-              Key Calculations Reference
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <h4 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
-                  <DollarSign className="h-4 w-4" />
-                  Revenue Calculations
-                </h4>
-                <ul className="space-y-2 text-sm text-gray-700">
-                  <li><strong>Total Revenue:</strong> Sum of commission amounts for closed properties</li>
-                  <li><strong>Commission:</strong> Sale price × commission rate × your split</li>
-                  <li><strong>ROI:</strong> (Revenue - Investment) / Investment × 100</li>
-                  <li><strong>Revenue per Hour:</strong> Total revenue / total hours worked</li>
-                </ul>
-              </div>
-              <div>
-                <h4 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
-                  <TrendingUp className="h-4 w-4" />
-                  Performance Metrics
-                </h4>
-                <ul className="space-y-2 text-sm text-gray-700">
-                  <li><strong>Conversion Rate:</strong> Agreements / Appointments × 100</li>
-                  <li><strong>Offer Acceptance Rate:</strong> Accepted offers / Total offers × 100</li>
-                  <li><strong>Call Answer Rate:</strong> Answered calls / Total calls × 100</li>
-                  <li><strong>Days on Market:</strong> Sold date - Listing date</li>
-                </ul>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
         {/* Support Information */}
         <Card className="mt-6">
           <CardHeader>
@@ -1498,21 +1483,21 @@ Manage your EliteKPI subscription and billing preferences.
           <CardContent>
             <div className="space-y-4">
               <div className="flex items-start gap-3">
-                <div className="w-2 h-2 bg-blue-400 rounded-full mt-2"></div>
+                <div className="w-2 h-2 bg-primary rounded-full mt-2"></div>
                 <div>
                   <p className="font-medium text-gray-900">Feature Requests</p>
                   <p className="text-sm text-gray-600">Have an idea for improving EliteKPI? We'd love to hear it!</p>
                 </div>
               </div>
               <div className="flex items-start gap-3">
-                <div className="w-2 h-2 bg-green-400 rounded-full mt-2"></div>
+                <div className="w-2 h-2 bg-primary rounded-full mt-2"></div>
                 <div>
                   <p className="font-medium text-gray-900">Data Export</p>
                   <p className="text-sm text-gray-600">All reports can be printed or saved as PDF for your records.</p>
                 </div>
               </div>
               <div className="flex items-start gap-3">
-                <div className="w-2 h-2 bg-purple-400 rounded-full mt-2"></div>
+                <div className="w-2 h-2 bg-primary rounded-full mt-2"></div>
                 <div>
                   <p className="font-medium text-gray-900">Calculation Accuracy</p>
                   <p className="text-sm text-gray-600">All calculations use your actual data and settings for maximum accuracy.</p>
@@ -1566,9 +1551,9 @@ Manage your EliteKPI subscription and billing preferences.
                       } else if (line.startsWith('### ')) {
                         return <h3 key={index} className="text-lg font-medium text-gray-700 mt-4 mb-2">{line.replace('### ', '')}</h3>;
                       } else if (line.startsWith('- ')) {
-                        return <li key={index} className="ml-4 text-gray-700 list-disc">{line.replace('- ', '')}</li>;
+                        return <li key={index} className="ml-4 text-gray-700 list-disc primary-bullet">{line.replace('- ', '')}</li>;
                       } else if (line.match(/^\d+\. /)) {
-                        return <li key={index} className="ml-4 text-gray-700 list-decimal">{line.replace(/^\d+\. /, '')}</li>;
+                        return <li key={index} className="ml-4 text-gray-700 list-decimal primary-bullet">{line.replace(/^\d+\. /, '')}</li>;
                       } else if (line.startsWith('*') && line.endsWith('*') && line.length > 2) {
                         return <p key={index} className="text-gray-600 italic text-sm mt-4 p-3 bg-blue-50 border-l-4 border-blue-200 rounded">{line.replace(/^\*|\*$/g, '')}</p>;
                       } else if (line.trim() === '') {
@@ -1583,6 +1568,31 @@ Manage your EliteKPI subscription and billing preferences.
             </ScrollArea>
           </DialogContent>
         </Dialog>
+
+        {/* Coming Soon Section */}
+        <section className="mt-12">
+          <div className="text-center mb-8">
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">Coming Soon</h2>
+            <p className="text-gray-600">Exciting new features are on the way to enhance your real estate KPI tracking experience</p>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <ComingSoonCard
+              title="Smart Goals"
+              description="AI-powered goal recommendations based on performance patterns."
+              icon={Brain}
+            />
+            <ComingSoonCard
+              title="Predictive Analytics"
+              description="Forecast market trends and identify optimal strategies."
+              icon={Zap}
+            />
+            <ComingSoonCard
+              title="Automated Insights"
+              description="Get personalized recommendations delivered to your inbox."
+              icon={Lightbulb}
+            />
+          </div>
+        </section>
       </div>
       
     </div>

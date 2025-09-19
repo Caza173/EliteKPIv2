@@ -389,16 +389,68 @@ export class PropertyLookupService {
   // Real address validation using Google Maps Geocoding API
   private async validateAndStandardizeAddress(address: string): Promise<{ fullAddress: string; city: string; state: string; zipcode: string } | null> {
     try {
-      // Try Google Maps Geocoding API first if available
+      // Try Mapbox Geocoding API first if available
+      if (process.env.MAPBOX_ACCESS_TOKEN) {
+        return await this.validateWithMapbox(address);
+      }
+      
+      // Fallback to Google Maps if Mapbox not available
       if (process.env.GOOGLE_MAPS_API_KEY) {
         return await this.validateWithGoogleMaps(address);
       }
       
-      // Fallback to enhanced local parsing
+      // Final fallback to enhanced local parsing
       return this.parseAddress(address);
     } catch (error) {
       console.warn('Address validation failed:', error);
       return this.parseAddress(address);
+    }
+  }
+
+  private async validateWithMapbox(address: string): Promise<{ fullAddress: string; city: string; state: string; zipcode: string } | null> {
+    try {
+      const response = await axios.get(`https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(address)}.json`, {
+        params: {
+          access_token: process.env.MAPBOX_ACCESS_TOKEN,
+          country: 'us',
+          types: 'address',
+          limit: 1
+        }
+      });
+
+      if (response.data.features && response.data.features.length > 0) {
+        const feature = response.data.features[0];
+        const context = feature.context || [];
+        
+        let city = '';
+        let state = '';
+        let zipcode = '';
+        
+        // Extract components from context
+        for (const item of context) {
+          if (item.id.startsWith('place.')) {
+            city = item.text;
+          } else if (item.id.startsWith('region.')) {
+            state = item.short_code?.replace('US-', '') || item.text;
+          } else if (item.id.startsWith('postcode.')) {
+            zipcode = item.text;
+          }
+        }
+        
+        if (city && state && zipcode) {
+          return {
+            fullAddress: feature.place_name,
+            city,
+            state,
+            zipcode
+          };
+        }
+      }
+      
+      return null;
+    } catch (error) {
+      console.error('Mapbox geocoding failed:', error);
+      return null;
     }
   }
 

@@ -294,6 +294,7 @@ export const goals = pgTable("goals", {
   userId: varchar("user_id").notNull().references(() => users.id, { onDelete: 'cascade' }),
   period: goalPeriodEnum("period").notNull(),
   calls: integer("calls"),
+  callsAnswered: integer("calls_answered"),
   appointments: integer("appointments"),
   cmas: integer("cmas"),
   hours: decimal("hours", { precision: 5, scale: 2 }),
@@ -803,6 +804,7 @@ export const insertMileageLogSchema = createInsertSchema(mileageLogs).extend({
 
 export const insertGoalSchema = createInsertSchema(goals).extend({
   calls: z.coerce.number().optional().nullable(),
+  callsAnswered: z.coerce.number().optional().nullable(),
   appointments: z.coerce.number().optional().nullable(),
   cmas: z.coerce.number().optional().nullable(),
   hours: z.coerce.number().optional().nullable(),

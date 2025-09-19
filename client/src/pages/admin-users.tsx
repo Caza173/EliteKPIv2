@@ -116,7 +116,7 @@ export default function AdminUsersPage() {
     <AdminLayout>
       <div className="space-y-6" data-testid="admin-users-page">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">
+          <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-black">
             User Management
           </h1>
           <p className="text-slate-600 dark:text-slate-400">
@@ -220,10 +220,10 @@ export default function AdminUsersPage() {
                                 ? `${user.firstName} ${user.lastName}` 
                                 : user.email}
                             </CardTitle>
-                            <CardDescription className="flex items-center gap-2 mt-1">
-                              <span>{user.email}</span>
-                              <span>•</span>
-                              <span>Joined {format(new Date(user.createdAt), 'MMM d, yyyy')}</span>
+                            <CardDescription className="flex items-center gap-2 mt-1 text-gray-700">
+                              <span className="px-3 py-1.5 border border-gray-300 rounded-md bg-gray-50 text-sm font-mono text-gray-900">{user.email}</span>
+                              <span className="text-gray-600">•</span>
+                              <span className="text-gray-600">Joined {format(new Date(user.createdAt), 'MMM d, yyyy')}</span>
                             </CardDescription>
                           </div>
                         </div>
@@ -270,7 +270,7 @@ export default function AdminUsersPage() {
                                   <div>
                                     <h4 className="font-semibold mb-2">User Information</h4>
                                     <div className="space-y-2 text-sm">
-                                      <p><span className="font-medium">Email:</span> {user.email}</p>
+                                      <p><span className="font-medium">Email:</span> <span className="px-2 py-1 border border-gray-300 rounded bg-gray-50 font-mono text-xs text-gray-900">{user.email}</span></p>
                                       <p><span className="font-medium">Name:</span> {user.firstName && user.lastName ? `${user.firstName} ${user.lastName}` : 'Not provided'}</p>
                                       <p><span className="font-medium">Created:</span> {format(new Date(user.createdAt), 'PPp')}</p>
                                       <p><span className="font-medium">Last Updated:</span> {format(new Date(user.updatedAt), 'PPp')}</p>

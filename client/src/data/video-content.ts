@@ -656,8 +656,8 @@ Automate the routine, amplify the exceptional."
 Let AI handle the details while you focus on building relationships and closing deals!"`
   },
   {
-    id: "market-timing-ai-tour",
-    title: "Market Timing AI (Premium)",
+    id: "office-challenges-tour",
+    title: "Office Challenges (Premium)",
     description: "Predictive market analysis and optimal timing strategies",
     duration: 4,
     category: "advanced",
@@ -1147,7 +1147,7 @@ A properly configured system works better for your business!"`
 - **Getting Started:** Master the fundamentals with Dashboard, Properties, and Activities tutorials
 - **Financial Management:** Learn advanced tracking with CMAs, Commissions, and Expense management
 - **Advanced Analytics:** Dive deep into Market Trends, Reports, Goals, and Performance optimization
-- **Premium Features:** Unlock the power of Smart Tasks, Market Timing AI, Achievements, and competitive Leaderboards
+- **Premium Features:** Unlock the power of Smart Tasks, Achievements, and competitive Leaderboards
 
 Each video includes detailed scripts, practical examples, and step-by-step instructions."
 

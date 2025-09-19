@@ -121,7 +121,7 @@ export default function ScheduleShowingModal({ isOpen, onClose, selectedProperty
         state: addressParts.length > 2 ? addressParts[2].split(' ')[0] : "",
         zipCode: addressParts.length > 2 ? addressParts[2].split(' ')[1] || "" : "",
         clientName: data.clientName || "",
-        representationType: "buyer_rep" as const,
+        representationType: "seller_rep" as const, // Fixed: showings should start as seller_rep, only move to buyer_rep when offer is accepted
         propertyType: "single_family" as const,
         leadSource: "referral" as const,
       };

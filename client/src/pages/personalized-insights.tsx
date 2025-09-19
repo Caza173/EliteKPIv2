@@ -83,6 +83,7 @@ const getTimeframeText = (timeframe: string) => {
     case '7_days': return '1 Week';
     case '30_days': return '1 Month';
     case '90_days': return '3 Months';
+    case '180_days': return '6 Months';
     case '1_year': return '1 Year';
     default: return timeframe;
   }

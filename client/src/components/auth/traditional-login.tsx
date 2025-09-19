@@ -8,9 +8,10 @@ import { Eye, EyeOff, Mail, Lock, ArrowLeft } from "lucide-react";
 
 interface TraditionalLoginProps {
   onBack: () => void;
+  onSwitchToSignup?: () => void;
 }
 
-export default function TraditionalLogin({ onBack }: TraditionalLoginProps) {
+export default function TraditionalLogin({ onBack, onSwitchToSignup }: TraditionalLoginProps) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -269,13 +270,17 @@ export default function TraditionalLogin({ onBack }: TraditionalLoginProps) {
                 type="button"
                 className="text-blue-600 hover:text-blue-800 hover:underline"
                 onClick={() => {
-                  toast({
-                    title: "Contact Support",
-                    description: "Please contact support to create a new account.",
-                  });
+                  if (onSwitchToSignup) {
+                    onSwitchToSignup();
+                  } else {
+                    toast({
+                      title: "Contact Support",
+                      description: "Please contact support to create a new account.",
+                    });
+                  }
                 }}
               >
-                Contact Support
+                {onSwitchToSignup ? "Sign Up" : "Contact Support"}
               </button>
             </p>
           </div>

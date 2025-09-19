@@ -153,7 +153,7 @@ export default function PropertyCard({ property }: PropertyCardProps) {
               variant="default"
               onClick={handleOfferWritten}
               disabled={updatePropertyMutation.isPending}
-              className="bg-blue-600 hover:bg-blue-700"
+              className="bg-white border-2 border-blue-600 text-black hover:bg-gray-50"
             >
               <FileText className="h-4 w-4 mr-1" />
               Write Offer
@@ -196,6 +196,7 @@ export default function PropertyCard({ property }: PropertyCardProps) {
             <Button 
               variant="outline" 
               size="sm"
+              className="bg-white border-2 border-blue-600 text-black hover:bg-gray-50"
               onClick={() => setIsDetailsOpen(true)}
             >
               <Eye className="h-4 w-4 mr-1" />

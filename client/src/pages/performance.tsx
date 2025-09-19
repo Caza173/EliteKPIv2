@@ -38,12 +38,19 @@ import {
 } from 'recharts';
 
 export default function Performance() {
+  console.log('🎯 Performance component starting to load...');
+  
   const { toast } = useToast();
   const { isAuthenticated, isLoading } = useAuth();
+  
+  console.log('🔐 Auth state:', { isAuthenticated, isLoading });
+  
   const [activeRecommendationTab, setActiveRecommendationTab] = useState<'high' | 'medium' | 'low'>('high');
   const [selectedPropertyIndex, setSelectedPropertyIndex] = useState<string>('0');
 
   useEffect(() => {
+    // Temporarily disabled to test rendering
+    /*
     if (!isLoading && !isAuthenticated) {
       toast({
         title: "Unauthorized",
@@ -55,6 +62,7 @@ export default function Performance() {
       }, 500);
       return;
     }
+    */
   }, [isAuthenticated, isLoading, toast]);
 
   const { data: metrics, error } = useQuery({

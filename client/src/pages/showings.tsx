@@ -3,11 +3,12 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Calendar, Clock, MapPin, Star } from "lucide-react";
+import { Plus, Calendar, Clock, MapPin, Star, FileText } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { isUnauthorizedError } from "@/lib/authUtils";
 import { formatDistanceToNow } from "date-fns";
+import { apiRequest } from "@/lib/queryClient";
 import AddShowingModal from "@/components/modals/add-showing-modal";
 import type { Showing } from "@shared/schema";
 
@@ -15,6 +16,7 @@ export default function Showings() {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const { toast } = useToast();
   const { isAuthenticated, isLoading } = useAuth();
+  const queryClient = useQueryClient();
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
@@ -33,6 +35,27 @@ export default function Showings() {
   const { data: showings = [], isLoading: showingsLoading, error } = useQuery({
     queryKey: ["/api/showings"],
     retry: false,
+  });
+
+  const updatePropertyMutation = useMutation({
+    mutationFn: async (data: { propertyId: string; status: string }) => {
+      await apiRequest("PUT", `/api/properties/${data.propertyId}`, { status: data.status });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/properties"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/dashboard/metrics"] });
+      toast({
+        title: "Success", 
+        description: "Offer status updated successfully",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to update property status",
+        variant: "destructive",
+      });
+    },
   });
 
   if (error && isUnauthorizedError(error as Error)) {
@@ -208,9 +231,30 @@ export default function Showings() {
                 )}
 
                 <div className="flex justify-between items-center mt-4 pt-4 border-t border-gray-200">
-                  <span className="text-sm text-gray-500">
-                    Added {formatDistanceToNow(new Date(showing.createdAt))} ago
-                  </span>
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm text-gray-500">
+                      Added {formatDistanceToNow(new Date(showing.createdAt || new Date()))} ago
+                    </span>
+                    {showing.propertyId && (
+                      <Button
+                        size="sm"
+                        className="bg-purple-600 hover:bg-purple-700 text-white"
+                        disabled={updatePropertyMutation.isPending}
+                        onClick={() => {
+                          if (showing.propertyId) {
+                            updatePropertyMutation.mutate({
+                              propertyId: showing.propertyId,
+                              status: 'offer_written'
+                              // Keep representationType as 'seller_rep' - don't move to buyers tab until offer is accepted
+                            });
+                          }
+                        }}
+                      >
+                        <FileText className="h-4 w-4 mr-1" />
+                        {updatePropertyMutation.isPending ? "Writing..." : "Write Offer"}
+                      </Button>
+                    )}
+                  </div>
                   <div className="flex items-center gap-1">
                     {Array.from({ length: 5 }, (_, i) => (
                       <Star

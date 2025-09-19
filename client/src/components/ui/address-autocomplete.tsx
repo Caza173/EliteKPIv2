@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Loader } from "@googlemaps/js-api-loader";
+import MapboxAddressAutocomplete from "./mapbox-address-autocomplete";
 
 interface AddressComponents {
   address: string;
@@ -49,11 +50,80 @@ export default function AddressAutocomplete({
   disabled = false,
   className = "",
 }: AddressAutocompleteProps) {
+  const [useMapbox, setUseMapbox] = useState(true);
+  const [mapboxToken, setMapboxToken] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const autocompleteRef = useRef<any>(null);
   const parseTimeout = useRef<NodeJS.Timeout>();
   const [isLoaded, setIsLoaded] = useState(false);
 
+  // Check for Mapbox token availability
+  useEffect(() => {
+    const checkMapboxToken = async () => {
+      try {
+        let token = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN;
+        
+        if (!token) {
+          try {
+            const response = await fetch('/api/mapbox-token', {
+              credentials: 'include'
+            });
+            if (response.ok) {
+              const data = await response.json();
+              token = data.token;
+            }
+          } catch (error) {
+            console.log('Mapbox token not available, falling back to Google Maps');
+          }
+        }
+
+        if (token && token !== "YOUR_MAPBOX_ACCESS_TOKEN_HERE") {
+          setMapboxToken(token);
+          setUseMapbox(true);
+        } else {
+          setUseMapbox(false);
+        }
+      } catch (error) {
+        console.error('Error checking Mapbox availability:', error);
+        setUseMapbox(false);
+      }
+    };
+
+    checkMapboxToken();
+  }, []);
+
+  // Handle Mapbox address selection
+  const handleMapboxAddressSelect = (details: any) => {
+    if (onAddressSelect) {
+      const components: AddressComponents = {
+        address: details.fullAddress,
+        city: details.city,
+        state: details.state,
+        zipCode: details.zipCode
+      };
+      onAddressSelect(components);
+    }
+  };
+
+  // If Mapbox is available and enabled, use it
+  if (useMapbox && mapboxToken) {
+    return (
+      <MapboxAddressAutocomplete
+        value={value}
+        onChange={(newValue, details) => {
+          onChange(newValue);
+          if (details) {
+            handleMapboxAddressSelect(details);
+          }
+        }}
+        onAddressSelect={handleMapboxAddressSelect}
+        placeholder={placeholder}
+        className={className}
+      />
+    );
+  }
+
+  // Fallback to Google Maps implementation
   useEffect(() => {
     const initializeAutocomplete = async () => {
       if (!inputRef.current || isLoaded) {

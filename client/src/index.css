@@ -2,6 +2,15 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Custom bullet point styling */
+.primary-bullets li::marker {
+    color: hsl(var(--primary));
+}
+
+.primary-bullet::marker {
+    color: hsl(var(--primary));
+}
+
 /* Gradient background styling */
 html {
     height: 100%;

@@ -12,16 +12,14 @@ import Properties from "@/pages/properties";
 import Cmas from "@/pages/cmas";
 import Reports from "@/pages/reports";
 import Performance from "@/pages/performance";
+import PerformanceTest from "@/pages/performance-test";
 import Calculator from "@/pages/calculator";
 import Billing from "@/pages/billing";
 import Subscribe from "@/pages/subscribe";
 import CompetitionHub from "@/pages/competition-hub";
 import OfficeCompetitions from "@/pages/office-competitions";
-import MarketTiming from "@/pages/market-timing";
-import OfferStrategies from "@/pages/offer-strategies";
 import ExpenseAnalysis from "@/pages/expense-analysis";
 import { LearningPage } from "@/pages/learning";
-import { IntegrationsPage } from "@/pages/integrations";
 import { useAchievementCelebration } from "@/hooks/useAchievementCelebration";
 import AchievementCelebration from "@/components/achievements/achievement-celebration";
 import { useTaskReminders } from "@/hooks/use-task-reminders";
@@ -39,6 +37,7 @@ import AdminUsersPage from "@/pages/admin-users";
 import AdminDashboardNew from "@/pages/admin/dashboard";
 import AdminSettings from "@/pages/admin/settings";
 import EfficiencyCalculator from "@/pages/efficiency-calculator";
+import CalendarPage from "@/pages/calendar";
 import AppLayout from "@/components/layout/app-layout";
 import { Trophy } from "lucide-react";
 
@@ -75,7 +74,6 @@ function Router() {
           </p>
           <div className="space-y-3 text-sm text-gray-700 mb-6">
             <p>🏆 Advanced performance analytics and insights</p>
-            <p>📊 Market Timing AI predictions</p>
             <p>🎯 Office challenges and team productivity</p>
             <p>🤖 Competition hub with agent leaderboards</p>
           </div>
@@ -175,14 +173,12 @@ function Router() {
           <Route path="/reports" component={Reports} />
           <Route path="/performance" component={Performance} />
           <Route path="/calculator" component={Calculator} />
+          <Route path="/calendar" component={CalendarPage} />
           <Route path="/activities" component={Activities} />
           <Route path="/learning" component={LearningPage} />
-          <Route path="/integrations" component={IntegrationsPage} />
           <Route path="/billing" component={Billing} />
           <Route path="/subscribe" component={Subscribe} />
           <Route path="/office-competitions" component={OfficeCompetitions} />
-          <Route path="/market-timing" component={MarketTiming} />
-          <Route path="/offer-strategies" component={OfferStrategies} />
           <Route path="/competition" component={CompetitionHub} />
           <Route path="/settings" component={Settings} />
           <Route path="/help" component={Help} />

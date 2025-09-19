@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { 
   BarChart3, 
   Home, 
@@ -12,21 +11,11 @@ import {
   Star,
   Bell,
   Users,
+  Zap,
+  Brain,
+  Lightbulb,
   ChevronDown,
-  TrendingUp,
-  // New modern icons for redesign
-  TrendingDown,
-  Minus,
-  Plus,
-  ArrowUpRight, 
-  ArrowDownRight, 
-  Calendar, 
-  Building2, 
-  HandCoins, 
-  Timer, 
-  BarChart, 
-  Award, 
-  Briefcase
+  TrendingUp
 } from "lucide-react";
 import { KpiCard } from "@/components/ui/kpi-card";
 import { RingGauge } from "@/components/ui/ring-gauge";
@@ -34,9 +23,28 @@ import { RingGauge } from "@/components/ui/ring-gauge";
 import { BadgeCard } from "@/components/ui/badge-card";
 import { FactorRow } from "@/components/ui/factor-row";
 import { Progress } from "@/components/ui/progress";
+import { Switch } from "@/components/ui/switch";
 import { formatCurrency } from "@/lib/calculations";
 import { FeatureGate, usePlanInfo } from "@/hooks/usePlanInfo";
 import LeadSourcePropertiesModal from "@/components/modals/lead-source-properties-modal";
+
+// Helper components
+function TeaserCard({ title, description, icon }: { title: string; description: string; icon: any }) {
+  const IconComponent = icon;
+  return (
+    <Card className="bg-white border-slate-200 hover:shadow-lg hover:border-blue-300 transition-all duration-200 rounded-2xl shadow-sm">
+      <CardContent className="p-6 text-center">
+        <IconComponent className="h-8 w-8 mx-auto mb-3 text-blue-500" />
+        <h3 className="font-semibold text-black mb-2">{title}</h3>
+        <p className="text-sm text-black mb-4">{description}</p>
+        <div className="flex items-center justify-center space-x-2">
+          <span className="text-xs text-black">Notify me</span>
+          <Switch />
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
 
 export default function Dashboard() {
   const { data: user } = useQuery({
@@ -94,7 +102,6 @@ export default function Dashboard() {
   const totalProperties = (metrics as any)?.totalProperties ?? 0; // Get actual property count
   const withdrawnProperties = (metrics as any)?.withdrawnProperties ?? 0;
   const expiredProperties = (metrics as any)?.expiredProperties ?? 0;
-  const terminatedProperties = (metrics as any)?.terminatedProperties ?? (withdrawnProperties + expiredProperties);
   
   // Use server-calculated values
   const avgTransactionPeriod = (metrics as any)?.avgTransactionPeriod ?? 45;
@@ -149,42 +156,6 @@ export default function Dashboard() {
       sparkline: generateSparkline(),
       intent: "success" as const
     },
-    // Business Metrics moved from separate section
-    {
-      title: "This Month Revenue",
-      value: formatCurrency(totalRevenue),
-      delta: { value: 12.5, direction: "up" as const },
-      sparkline: generateSparkline(),
-      intent: "success" as const
-    },
-    {
-      title: "Avg Transaction Period",
-      value: `${avgTransactionPeriod} days`,
-      delta: { value: 5.2, direction: "down" as const },
-      sparkline: generateSparkline(),
-      intent: "success" as const
-    },
-    {
-      title: "Buyer Conversion Rate",
-      value: `${buyerConversionRate}%`,
-      delta: { value: 3.8, direction: "up" as const },
-      sparkline: generateSparkline(),
-      intent: "success" as const
-    },
-    {
-      title: "Seller Conversion Rate", 
-      value: `${sellerConversionRate}%`,
-      delta: { value: 2.1, direction: "up" as const },
-      sparkline: generateSparkline(),
-      intent: "success" as const
-    },
-    {
-      title: "Offer Acceptance Rate",
-      value: `${offerAcceptanceRate}%`,
-      delta: { value: 4.3, direction: "up" as const },
-      sparkline: generateSparkline(),
-      intent: "success" as const
-    },
     {
       title: "Active Listings",
       value: activeListings.toString(),
@@ -203,13 +174,6 @@ export default function Dashboard() {
       title: "Expired",
       value: expiredProperties.toString(),
       delta: { value: 1.8, direction: "up" as const },
-      sparkline: generateSparkline(),
-      intent: "danger" as const
-    },
-    {
-      title: "Terminated",
-      value: terminatedProperties.toString(),
-      delta: { value: 3.5, direction: "down" as const },
       sparkline: generateSparkline(),
       intent: "danger" as const
     },
@@ -259,15 +223,16 @@ export default function Dashboard() {
   ] as Array<{ label: string; weightPct: number; trend: -1 | 0 | 1 }>;
 
   return (
-    <div className="flex-1 overflow-y-auto bg-gray-50">
+    <div className="flex-1 overflow-y-auto bg-gradient-to-br from-slate-900 via-blue-600 to-white"
+         style={{ background: 'linear-gradient(135deg, #0a1a2a 0%, #1e3a8a 30%, #2563eb 60%, #ffffff 100%)' }}>
       <div className="max-w-screen-2xl mx-auto px-6 md:px-8 py-8 space-y-8">
         
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
-            <p className="text-sm text-gray-600 mt-1 flex items-center">
-              <Home className="h-4 w-4 mr-1" />
+            <h1 className="text-3xl font-bold text-white">Dashboard</h1>
+            <p className="text-sm text-white mt-1">
+              <Home className="h-4 w-4 inline mr-1" />
               Real Estate KPI Center
             </p>
           </div>
@@ -275,12 +240,12 @@ export default function Dashboard() {
           <div className="flex items-center space-x-4">
             {/* Plan Info Display */}
             {planInfo && (
-              <div className="bg-white rounded-lg px-4 py-3 border border-gray-200 shadow-sm">
-                <div className="text-xs text-gray-500">Current Plan</div>
-                <div className="text-sm font-semibold text-gray-900 capitalize">
+              <div className="bg-white/10 backdrop-blur-sm rounded-lg px-3 py-2 border border-white/20">
+                <div className="text-xs text-white/80">Current Plan</div>
+                <div className="text-sm font-semibold text-white capitalize">
                   {planInfo.planId}
                   {planInfo.planId === 'starter' && (
-                    <span className="ml-2 text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">
+                    <span className="ml-2 text-xs bg-blue-100 text-blue-800 px-2 py-0.5 rounded">
                       {totalProperties}/{planInfo.limits.properties} Properties
                     </span>
                   )}
@@ -288,9 +253,23 @@ export default function Dashboard() {
               </div>
             )}
             
-            <div className="flex items-center space-x-2 text-gray-600">
-              <Clock className="h-4 w-4" />
-              <span className="text-sm">
+            <div className="flex items-center space-x-2">
+              <input 
+                type="date" 
+                className="text-sm bg-white border border-slate-200 rounded-xl px-3 py-2 text-black"
+                defaultValue={new Date().toISOString().split('T')[0]}
+              />
+              <span className="text-white text-sm">to</span>
+              <input 
+                type="date" 
+                className="text-sm bg-white border border-slate-200 rounded-xl px-3 py-2 text-black"
+                defaultValue={new Date().toISOString().split('T')[0]}
+              />
+            </div>
+            
+            <div className="flex items-center space-x-2">
+              <Clock className="h-4 w-4 text-white/60" />
+              <span className="text-sm text-white">
                 {new Date().toLocaleDateString('en-US', { 
                   weekday: 'short', 
                   month: 'short', 
@@ -303,8 +282,8 @@ export default function Dashboard() {
 
         {/* KPI Grid */}
         <section>
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">Key Performance Indicators</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
+          <h2 className="text-xl font-bold text-white mb-6">Key Performance Indicators</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-8">
             {kpis.map((kpi, index) => (
               <KpiCard
                 key={index}
@@ -320,17 +299,17 @@ export default function Dashboard() {
 
         {/* Overall Efficiency */}
         <section>
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">Performance Overview</h2>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <Card className="bg-white border border-gray-200 hover:shadow-md transition-shadow duration-200">
+          <h2 className="text-xl font-bold text-white mb-6">Overall Efficiency</h2>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <Card className="bg-white border-slate-200 hover:shadow-lg hover:border-blue-300 transition-all duration-200 rounded-2xl shadow-sm">
               <CardContent className="p-6 flex justify-center">
                 <RingGauge value={efficiencyScore} />
               </CardContent>
             </Card>
             
-            <Card className="bg-white border border-gray-200 hover:shadow-md transition-shadow duration-200">
+            <Card className="bg-white border-slate-200 hover:shadow-lg hover:border-blue-300 transition-all duration-200 rounded-2xl shadow-sm">
               <CardHeader>
-                <CardTitle className="text-gray-900">Performance Factors</CardTitle>
+                <CardTitle className="text-black">Performance Breakdown</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-1">
@@ -348,33 +327,101 @@ export default function Dashboard() {
           </div>
         </section>
 
-        {/* Additional Business Insights */}
+        {/* Operational Snapshot */}
         <section>
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">Additional Insights</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <Card className="bg-white border border-gray-200 hover:shadow-md transition-shadow duration-200">
+          <h2 className="text-xl font-bold text-white mb-6">Operational Snapshot</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-8">
+            <Card className="bg-white border-slate-200 hover:shadow-lg hover:border-blue-300 transition-all duration-200 rounded-2xl shadow-sm">
               <CardContent className="p-6">
                 <div className="flex items-center justify-between mb-4">
-                  <span className="text-xs font-medium text-gray-600 tracking-wide uppercase">
+                  <span className="text-xs font-medium text-black tracking-wide uppercase">
+                    This Month Revenue
+                  </span>
+                  <BarChart3 className="h-4 w-4 text-blue-500" />
+                </div>
+                <div className="text-2xl font-bold text-black tabular-nums">
+                  {formatCurrency(totalRevenue)}
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-white border-slate-200 hover:shadow-lg hover:border-blue-300 transition-all duration-200 rounded-2xl shadow-sm">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <span className="text-xs font-medium text-black tracking-wide uppercase">
+                    Avg Transaction Period
+                  </span>
+                  <Clock className="h-4 w-4 text-blue-500" />
+                </div>
+                <div className="text-2xl font-bold text-black tabular-nums">
+                  {avgTransactionPeriod} days
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-white border-slate-200 hover:shadow-lg hover:border-blue-300 transition-all duration-200 rounded-2xl shadow-sm">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <span className="text-xs font-medium text-black tracking-wide uppercase">
+                    Conversion Rates
+                  </span>
+                  <Target className="h-4 w-4 text-green-500" />
+                </div>
+                <div className="space-y-2">
+                  <div className="flex justify-between text-sm">
+                    <span className="text-black">Buyers</span>
+                    <span className="font-medium text-black">{buyerConversionRate}%</span>
+                  </div>
+                  <Progress value={buyerConversionRate} className="h-1.5" />
+                  <div className="flex justify-between text-sm">
+                    <span className="text-black">Sellers</span>
+                    <span className="font-medium text-black">{sellerConversionRate}%</span>
+                  </div>
+                  <Progress value={sellerConversionRate} className="h-1.5" />
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-white border-slate-200 hover:shadow-lg hover:border-blue-300 transition-all duration-200 rounded-2xl shadow-sm">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <span className="text-xs font-medium text-black tracking-wide uppercase">
+                    Offer Acceptance Rate
+                  </span>
+                  <Activity className="h-4 w-4 text-blue-500" />
+                </div>
+                <div className="text-2xl font-bold text-black tabular-nums">
+                  {offerAcceptanceRate}%
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Second row */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-8">
+            <Card className="bg-white border-slate-200 hover:shadow-lg hover:border-blue-300 transition-all duration-200 rounded-2xl shadow-sm">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <span className="text-xs font-medium text-black tracking-wide uppercase">
                     Revenue Per Hour
                   </span>
-                  <DollarSign className="h-4 w-4 text-green-600" />
+                  <DollarSign className="h-4 w-4 text-green-500" />
                 </div>
-                <div className="text-2xl font-bold text-gray-900 tabular-nums">
+                <div className="text-2xl font-bold text-black tabular-nums">
                   {formatCurrency(revenuePerHour)}
                 </div>
               </CardContent>
             </Card>
 
-            <Card className="bg-white border border-gray-200 hover:shadow-md transition-shadow duration-200">
+            <Card className="bg-white border-slate-200 hover:shadow-lg hover:border-blue-300 transition-all duration-200 rounded-2xl shadow-sm">
               <CardContent className="p-6">
                 <div className="flex items-center justify-between mb-4">
-                  <span className="text-xs font-medium text-gray-600 tracking-wide uppercase">
+                  <span className="text-xs font-medium text-black tracking-wide uppercase">
                     ROI Performance
                   </span>
-                  <Star className="h-4 w-4 text-purple-600" />
+                  <Star className="h-4 w-4 text-purple-500" />
                 </div>
-                <div className="text-2xl font-bold text-gray-900 tabular-nums">
+                <div className="text-2xl font-bold text-black tabular-nums">
                   {roiPerformance}%
                 </div>
               </CardContent>
@@ -382,14 +429,14 @@ export default function Dashboard() {
           </div>
 
           {/* Lead Source Tracking */}
-          <div className="mt-6">
-            <Card className="bg-white border border-gray-200 hover:shadow-md transition-shadow duration-200">
+          <div className="mt-8">
+            <Card className="bg-white border-slate-200 hover:shadow-lg hover:border-blue-300 transition-all duration-200 rounded-2xl shadow-sm">
               <CardContent className="p-6">
                 <div className="flex items-center justify-between mb-6">
-                  <span className="text-lg font-semibold text-gray-900">
+                  <span className="text-lg font-semibold text-black">
                     Lead Sources
                   </span>
-                  <Users className="h-5 w-5 text-blue-600" />
+                  <Users className="h-5 w-5 text-blue-500" />
                 </div>
                 <div className="space-y-4">
                   {(leadSourceData as any)?.leadSources?.slice(0, 6).map((item: any, index: number) => (
@@ -399,16 +446,16 @@ export default function Dashboard() {
                       onClick={() => handleLeadSourceClick(item)}
                     >
                       <div className="flex items-center space-x-3">
-                        <div className="flex-shrink-0 w-8 h-8 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center text-white text-sm font-medium">
+                        <div className="flex-shrink-0 w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white text-sm font-medium">
                           {index + 1}
                         </div>
                         <div>
-                          <div className="text-sm font-medium text-gray-900">{item.source}</div>
+                          <div className="text-sm font-medium text-black">{item.source}</div>
                           <div className="text-xs text-gray-500">{item.percentage}% of total</div>
                         </div>
                       </div>
                       <div className="text-right">
-                        <div className="text-lg font-bold text-gray-900">{item.count}</div>
+                        <div className="text-lg font-bold text-black">{item.count}</div>
                         <div className="text-xs text-gray-500">properties</div>
                       </div>
                     </div>
@@ -423,6 +470,32 @@ export default function Dashboard() {
                 </div>
               </CardContent>
             </Card>
+          </div>
+        </section>
+
+
+
+
+
+        {/* Coming Soon */}
+        <section>
+          <h2 className="text-xl font-bold text-black mb-6">Coming Soon</h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <TeaserCard
+              title="Smart Goals"
+              description="AI-powered goal recommendations based on performance patterns."
+              icon={Brain}
+            />
+            <TeaserCard
+              title="Predictive Analytics"
+              description="Forecast market trends and identify optimal strategies."
+              icon={Zap}
+            />
+            <TeaserCard
+              title="Automated Insights"
+              description="Get personalized recommendations delivered to your inbox."
+              icon={Lightbulb}
+            />
           </div>
         </section>
       </div>

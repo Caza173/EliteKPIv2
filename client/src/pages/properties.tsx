@@ -15,6 +15,7 @@ import PropertyDetailsSheet from "@/components/properties/property-details-sheet
 import type { Property, Activity } from "@shared/schema";
 
 export default function Properties() {
+  console.log("Properties component is mounting...");
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isShowingModalOpen, setIsShowingModalOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("showings");
@@ -357,7 +358,10 @@ export default function Properties() {
                 Add Showing
               </Button>
               <Button
-                onClick={() => setIsAddModalOpen(true)}
+                onClick={() => {
+                  console.log('Add Property button clicked, isAddModalOpen:', isAddModalOpen);
+                  setIsAddModalOpen(true);
+                }}
                 variant="outline"
                 className="flex items-center gap-2"
               >

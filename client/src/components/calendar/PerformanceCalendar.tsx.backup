@@ -1,0 +1,1251 @@
+import React, { useEffect, useMemo, useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Badge } from "@/components/ui/badge";
+import { ChevronLeft, ChevronRight, Lock, Unlock, Target } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { apiRequest } from "@/lib/queryClient";
+import { format } from "date-fns";
+
+// ---- Types ----
+type MetricKey = 
+  | "calls"
+  | "appointments" 
+  | "sellerAppts"
+  | "buyerAppts"
+  | "appointmentsSet"
+  | "cmasCompleted"
+  | "hoursWorked"
+  | "offersWritten"
+  | "showings"
+  | "buyersSignedUp"
+  | "listingsSigned";
+
+type ActivityActual = {
+  id: string;
+  userId: string;
+  date: string;
+  calls: number;
+  appointments: number;
+  sellerAppts: number;
+  buyerAppts: number;
+  appointmentsSet: number;
+  cmasCompleted: number;
+  hoursWorked: number;
+  offersWritten: number;
+  showings: number;
+  buyersSignedUp: number;
+  listingsSigned: number;
+};
+
+type Goal = {
+  id: string;
+  userId: string;
+  period: 'daily' | 'weekly' | 'monthly';
+  calls?: number;
+  appointments?: number;
+  cmas?: number;
+  hours?: number;
+  offersToWrite?: number;
+  monthlyClosings?: number;
+  isLocked: boolean;
+  effectiveDate: string;
+};
+
+// ---- Helpers ----
+const metricLabels: Record<MetricKey, string> = {
+  calls: "Calls Made",
+  appointments: "Total Appointments", 
+  sellerAppts: "Seller Appointments",
+  buyerAppts: "Buyer Appointments",
+  appointmentsSet: "Appointments Set",
+  cmasCompleted: "CMAs Completed",
+  hoursWorked: "Hours Worked",
+  offersWritten: "Offers Written",
+  showings: "Showings",
+  buyersSignedUp: "Buyers Signed",
+  listingsSigned: "Listings Signed",
+};
+
+const dailyMetrics: MetricKey[] = ["calls", "appointments", "hoursWorked"];
+const weeklyMetrics: MetricKey[] = ["appointmentsSet", "cmasCompleted", "showings"];
+const monthlyMetrics: MetricKey[] = ["offersWritten", "buyersSignedUp", "listingsSigned"];
+
+function workingDaysInMonth(year: number, monthIdx: number) {
+  const d = new Date(year, monthIdx, 1);
+  let count = 0;
+  while (d.getMonth() === monthIdx) {
+    const day = d.getDay();
+    if (day !== 0 && day !== 6) count++; // Mon-Fri
+    d.setDate(d.getDate() + 1);
+  }
+  return count || 22;
+}
+
+function calculateDailyTargets(goals: Goal[], date: Date) {
+  const dailyGoals = goals.filter(g => g.period === 'daily');
+  const weeklyGoals = goals.filter(g => g.period === 'weekly');
+  const monthlyGoals = goals.filter(g => g.period === 'monthly');
+  
+  const workingDaysThisMonth = workingDaysInMonth(date.getFullYear(), date.getMonth());
+  
+  // Get the most recent goal for each period
+  const latestDaily = dailyGoals.sort((a, b) => new Date(b.effectiveDate).getTime() - new Date(a.effectiveDate).getTime())[0];
+  const latestWeekly = weeklyGoals.sort((a, b) => new Date(b.effectiveDate).getTime() - new Date(a.effectiveDate).getTime())[0];
+  const latestMonthly = monthlyGoals.sort((a, b) => new Date(b.effectiveDate).getTime() - new Date(a.effectiveDate).getTime())[0];
+
+  const targets: Partial<Record<MetricKey, number>> = {};
+  
+  // Daily targets
+  if (latestDaily?.calls) targets.calls = latestDaily.calls;
+  if (latestDaily?.appointments) targets.appointments = latestDaily.appointments;
+  if (latestDaily?.hours) targets.hoursWorked = latestDaily.hours;
+  
+  // Weekly targets (convert to daily)
+  if (latestWeekly?.cmas) targets.cmasCompleted = latestWeekly.cmas / 5; // 5 working days per week
+  
+  // Monthly targets (convert to daily)
+  if (latestMonthly?.offersToWrite) targets.offersWritten = latestMonthly.offersToWrite / workingDaysThisMonth;
+  if (latestMonthly?.monthlyClosings) targets.listingsSigned = latestMonthly.monthlyClosings / workingDaysThisMonth;
+  
+  return targets;
+}
+
+function calculateProgress(current: number, target: number): number {
+  if (!target || target === 0) return 100;
+  return Math.max(0, Math.min(100, Math.round((current / target) * 100)));
+}
+
+export default function PerformanceCalendar() {
+  // Simple test to see if component renders
+  return (
+    <div className="w-full max-w-6xl mx-auto p-4 space-y-6">
+      <Card>
+        <CardHeader className="pb-4">
+          <CardTitle className="text-2xl">Performance Calendar Test</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="text-lg text-green-600">
+            ✅ Calendar component is rendering successfully!
+          </div>
+          <div className="mt-4">
+            <p>This is a test to verify the component loads properly.</p>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
+  // Fetch activity actuals for the current month
+  const { data: activityActuals = [], isLoading: isLoadingActuals } = useQuery<ActivityActual[]>({
+    queryKey: ["/api/activity-actuals", monthStart, monthEnd],
+    queryFn: async () => {
+      console.log('Fetching activity actuals...', monthStart, monthEnd);
+      const response = await fetch(`/api/activity-actuals?startDate=${monthStart}&endDate=${monthEnd}`, {
+        credentials: "include",
+      });
+      if (!response.ok) {
+        throw new Error('Failed to fetch activity actuals');
+      }
+      return response.json();
+    },
+    retry: false,
+  });
+
+  // Fetch goals
+  const { data: goals = [], isLoading: isLoadingGoals } = useQuery<Goal[]>({
+    queryKey: ["/api/goals"],
+    retry: false,
+  });
+
+  // Create/update activity actual mutation
+  const updateActualMutation = useMutation({
+    mutationFn: async (data: { date: string; updates: Partial<ActivityActual> }) => {
+      const response = await apiRequest("POST", "/api/activity-actuals", {
+        date: data.date,
+        ...data.updates,
+      });
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ 
+        predicate: (query) => query.queryKey[0] === "/api/activity-actuals" 
+      });
+      toast({ title: "Success", description: "Daily activities updated" });
+      setShowModal(false);
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to update activities",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Save goals mutation
+  const saveGoalsMutation = useMutation({
+    mutationFn: async (goalData: { period: string; values: any; lock?: boolean }) => {
+      const response = await apiRequest("POST", "/api/goals", goalData);
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/goals"] });
+      toast({ title: "Success", description: "Goals updated successfully" });
+      setShowGoalsModal(false);
+    },
+    onError: () => {
+      toast({
+        title: "Error", 
+        description: "Failed to update goals",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const dailyTargets = useMemo(() => calculateDailyTargets(goals as Goal[], currentMonth), [goals, currentMonth]);
+
+  // Create activity actuals map for easy lookup
+  const actualsMap = useMemo(() => {
+    const map: Record<string, ActivityActual> = {};
+    (activityActuals as ActivityActual[]).forEach((actual: ActivityActual) => {
+      map[actual.date] = actual;
+    });
+    return map;
+  }, [activityActuals]);
+
+  // Generate calendar grid
+  const calendarDays = useMemo(() => {
+    const firstDay = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 1);
+    const lastDay = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 0);
+    const startIdx = firstDay.getDay(); // 0 = Sunday
+    const totalDays = lastDay.getDate();
+
+    const days: (string | null)[] = [];
+    
+    // Add empty cells for days before month starts
+    for (let i = 0; i < startIdx; i++) {
+      days.push(null);
+    }
+    
+    // Add all days in the month
+    for (let day = 1; day <= totalDays; day++) {
+      const dateStr = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), day)
+        .toISOString().slice(0, 10);
+      days.push(dateStr);
+    }
+    
+    // Fill remaining cells to complete the grid
+    while (days.length % 7 !== 0) {
+      days.push(null);
+    }
+    
+    return days;
+  }, [currentMonth]);
+
+  function calculateDayProgress(dateStr: string): number {
+    const actual = actualsMap[dateStr];
+    if (!actual) return 0;
+
+    const progressValues: number[] = [];
+    Object.entries(dailyTargets).forEach(([key, target]) => {
+      if (target && target > 0) {
+        const actualValue = actual[key as MetricKey] || 0;
+        progressValues.push(calculateProgress(actualValue, target));
+      }
+    });
+
+    return progressValues.length > 0 
+      ? Math.round(progressValues.reduce((sum, val) => sum + val, 0) / progressValues.length)
+      : 0;
+  }
+
+  function openDayModal(dateStr: string) {
+    setSelectedDate(dateStr);
+    setShowModal(true);
+  }
+
+  function navigateMonth(direction: 'prev' | 'next') {
+    setCurrentMonth(prev => {
+      const newMonth = new Date(prev);
+      if (direction === 'prev') {
+        newMonth.setMonth(prev.getMonth() - 1);
+      } else {
+        newMonth.setMonth(prev.getMonth() + 1);
+      }
+      return newMonth;
+    });
+  }
+
+  const selectedActual = selectedDate ? actualsMap[selectedDate] : null;
+  const isGoalsLocked = (goals as Goal[]).some((g: Goal) => g.isLocked);
+
+  // Show loading state while data is being fetched
+  if (isLoadingActuals || isLoadingGoals) {
+    return (
+      <div className="w-full max-w-6xl mx-auto p-4 space-y-6">
+        <Card>
+          <CardContent className="p-8">
+            <div className="flex items-center justify-center">
+              <div className="text-lg">Loading calendar data...</div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  return (
+    <div className="w-full max-w-6xl mx-auto p-4 space-y-6">
+      {/* Header */}
+      <Card>
+        <CardHeader className="pb-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => navigateMonth('prev')}
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+              <CardTitle className="text-2xl">
+                {currentMonth.toLocaleString('default', { 
+                  month: 'long', 
+                  year: 'numeric' 
+                })}
+              </CardTitle>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => navigateMonth('next')}
+              >
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            </div>
+            
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowGoalsModal(true)}
+                disabled={isGoalsLocked}
+              >
+                <Target className="h-4 w-4 mr-2" />
+                Set Goals
+                {isGoalsLocked && <Lock className="h-3 w-3 ml-1" />}
+              </Button>
+              <Badge variant="outline" className="ml-2">
+                📊 {format(currentMonth, 'MMMM yyyy')} Performance
+              </Badge>
+            </div>
+          </div>
+        </CardHeader>
+      </Card>
+
+      {/* Calendar Grid */}
+      <Card>
+        <CardContent className="p-4">
+          <div className="grid grid-cols-7 gap-2">
+            {/* Day headers */}
+            {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
+              <div key={day} className="p-2 text-center font-medium text-gray-500 text-sm">
+                {day}
+              </div>
+            ))}
+            
+            {/* Calendar days */}
+            {calendarDays.map((dateStr, idx) => {
+              const isToday = dateStr === format(new Date(), 'yyyy-MM-dd');
+              return (
+                <div
+                  key={idx}
+                  className={`
+                    border rounded-lg p-1 h-32 relative cursor-pointer transition-all
+                    ${dateStr 
+                      ? `hover:shadow-md hover:border-blue-300 ${
+                          isToday 
+                            ? 'bg-blue-50 border-blue-500 border-2' 
+                            : 'bg-white'
+                        }` 
+                      : 'bg-gray-50 cursor-default'
+                    }
+                  `}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    if (dateStr) openDayModal(dateStr);
+                  }}
+                >
+                {dateStr && (
+                  <>
+                    {/* Date number */}
+                    <div className="text-sm font-medium text-gray-700 mb-1">
+                      {new Date(dateStr).getDate()}
+                    </div>
+                    
+                    {/* Daily Activity Summary */}
+                    <div className="space-y-0.5 text-xs">
+                      {(() => {
+                        const actual = actualsMap[dateStr];
+                        const callsTarget = dailyTargets.calls || 0;
+                        const apptTarget = dailyTargets.appointments || 0;
+                        const hoursTarget = dailyTargets.hoursWorked || 0;
+                        const cmasTarget = dailyTargets.cmasCompleted || 0;
+                        
+                        if (!actual && (callsTarget > 0 || apptTarget > 0 || hoursTarget > 0)) {
+                          // Show goals when no actuals yet
+                          return (
+                            <div className="space-y-0.5">
+                              {callsTarget > 0 && (
+                                <div className="flex justify-between text-xs text-gray-500">
+                                  <span>📞 Calls:</span>
+                                  <span>0/{callsTarget}</span>
+                                </div>
+                              )}
+                              {apptTarget > 0 && (
+                                <div className="flex justify-between text-xs text-gray-500">
+                                  <span>📅 Appts:</span>
+                                  <span>0/{apptTarget}</span>
+                                </div>
+                              )}
+                              {hoursTarget > 0 && (
+                                <div className="flex justify-between text-xs text-gray-500">
+                                  <span>⏰ Hours:</span>
+                                  <span>0/{hoursTarget}</span>
+                                </div>
+                              )}
+                              {cmasTarget > 0 && (
+                                <div className="flex justify-between text-xs text-gray-500">
+                                  <span>📊 CMAs:</span>
+                                  <span>0/{Math.ceil(cmasTarget)}</span>
+                                </div>
+                              )}
+                            </div>
+                          );
+                        } else if (actual) {
+                          // Show actuals vs goals
+                          return (
+                            <div className="space-y-0.5">
+                              {(actual.calls > 0 || callsTarget > 0) && (
+                                <div className="flex justify-between text-xs">
+                                  <span className={actual.calls >= callsTarget ? 'text-green-600' : 'text-orange-600'}>
+                                    📞 Calls:
+                                  </span>
+                                  <span className={actual.calls >= callsTarget ? 'text-green-600 font-medium' : 'text-orange-600'}>
+                                    {actual.calls}/{callsTarget}
+                                  </span>
+                                </div>
+                              )}
+                              {(actual.appointments > 0 || apptTarget > 0) && (
+                                <div className="flex justify-between text-xs">
+                                  <span className={actual.appointments >= apptTarget ? 'text-green-600' : 'text-orange-600'}>
+                                    📅 Appts:
+                                  </span>
+                                  <span className={actual.appointments >= apptTarget ? 'text-green-600 font-medium' : 'text-orange-600'}>
+                                    {actual.appointments}/{apptTarget}
+                                  </span>
+                                </div>
+                              )}
+                              {(actual.hoursWorked > 0 || hoursTarget > 0) && (
+                                <div className="flex justify-between text-xs">
+                                  <span className={actual.hoursWorked >= hoursTarget ? 'text-green-600' : 'text-orange-600'}>
+                                    ⏰ Hours:
+                                  </span>
+                                  <span className={actual.hoursWorked >= hoursTarget ? 'text-green-600 font-medium' : 'text-orange-600'}>
+                                    {actual.hoursWorked}/{hoursTarget}
+                                  </span>
+                                </div>
+                              )}
+                              {(actual.cmasCompleted > 0 || cmasTarget > 0) && (
+                                <div className="flex justify-between text-xs">
+                                  <span className={actual.cmasCompleted >= Math.ceil(cmasTarget) ? 'text-green-600' : 'text-orange-600'}>
+                                    📊 CMAs:
+                                  </span>
+                                  <span className={actual.cmasCompleted >= Math.ceil(cmasTarget) ? 'text-green-600 font-medium' : 'text-orange-600'}>
+                                    {actual.cmasCompleted}/{Math.ceil(cmasTarget)}
+                                  </span>
+                                </div>
+                              )}
+                            </div>
+                          );
+                        }
+                        return null;
+                      })()}
+                    </div>
+                    
+                    {/* Overall Progress bar at bottom */}
+                    <div className="absolute bottom-1 left-1 right-1">
+                      <div className="h-1.5 bg-gray-200 rounded-full overflow-hidden">
+                        <div
+                          className={`h-full transition-all ${
+                            calculateDayProgress(dateStr) >= 80 
+                              ? 'bg-green-500' 
+                              : calculateDayProgress(dateStr) >= 60 
+                                ? 'bg-yellow-500' 
+                                : 'bg-red-500'
+                          }`}
+                          style={{ width: `${calculateDayProgress(dateStr)}%` }}
+                        />
+                      </div>
+                      {actualsMap[dateStr] && (
+                        <div className="text-center text-xs text-gray-600 mt-0.5">
+                          {calculateDayProgress(dateStr)}%
+                        </div>
+                      )}
+                    </div>
+                  </>
+                )}
+              </div>
+              );
+            })}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Day Entry Modal */}
+      {showModal && selectedDate && (
+        <DayEntryModal
+          date={selectedDate}
+          initialData={actualsMap[selectedDate] || null}
+          targets={dailyTargets}
+          onSave={(data) => {
+            updateActualMutation.mutate({
+              date: selectedDate,
+              updates: data,
+            });
+          }}
+          onClose={() => setShowModal(false)}
+        />
+      )}
+
+      {/* Goals Modal */}
+      {showGoalsModal && (
+        <GoalsModal
+          goals={goals as Goal[]}
+          onSave={(goalData) => saveGoalsMutation.mutate(goalData)}
+          onClose={() => setShowGoalsModal(false)}
+        />
+      )}
+    </div>
+  );
+}
+
+// Day Entry Modal Component
+interface DayEntryModalProps {
+  date: string;
+  initialData?: ActivityActual | null;
+  targets: Partial<Record<MetricKey, number>>;
+  onSave: (data: Partial<ActivityActual>) => void;
+  onClose: () => void;
+}
+
+function DayEntryModal({ date, initialData, targets, onSave, onClose }: DayEntryModalProps) {
+  const [formData, setFormData] = useState<Record<MetricKey, number>>({
+    calls: initialData?.calls || 0,
+    appointments: initialData?.appointments || 0,
+    sellerAppts: initialData?.sellerAppts || 0,
+    buyerAppts: initialData?.buyerAppts || 0,
+    appointmentsSet: initialData?.appointmentsSet || 0,
+    cmasCompleted: initialData?.cmasCompleted || 0,
+    hoursWorked: initialData?.hoursWorked || 0,
+    offersWritten: initialData?.offersWritten || 0,
+    showings: initialData?.showings || 0,
+    buyersSignedUp: initialData?.buyersSignedUp || 0,
+    listingsSigned: initialData?.listingsSigned || 0,
+  });
+
+  function handleSubmit() {
+    onSave(formData);
+  }
+
+  return (
+    <Dialog open onOpenChange={onClose}>
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle className="text-2xl font-bold text-gray-900 mb-2">
+            📅 Daily Activities - {new Date(date).toLocaleDateString('en-US', { 
+              weekday: 'long', 
+              year: 'numeric', 
+              month: 'long', 
+              day: 'numeric' 
+            })}
+          </DialogTitle>
+        </DialogHeader>
+
+        {/* Goals Summary Section */}
+        <div className="bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 rounded-lg p-6 mb-6">
+          <h3 className="text-xl font-bold text-blue-900 mb-4 flex items-center gap-2">
+            🎯 Set Your Activity Goals
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
+            {/* Key Performance Metrics */}
+            {[
+              { key: 'calls', label: 'Calls', icon: '📞', target: targets.calls || 25 },
+              { key: 'appointments', label: 'Buyer Appointments', icon: '👥', target: targets.appointments || 1 },
+              { key: 'hoursWorked', label: 'Daily Hours', icon: '⏰', target: targets.hoursWorked || 8 },
+              { key: 'cmasCompleted', label: 'CMAs Completed', icon: '📊', target: targets.cmasCompleted || 3 }
+            ].map(item => {
+              const metricKey = item.key as MetricKey;
+              const current = formData[metricKey];
+              const progress = calculateProgress(current, item.target);
+              
+              return (
+                <div key={item.key} className="bg-white rounded-lg p-4 border border-gray-200 shadow-sm">
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center gap-2">
+                      <span className="text-lg">{item.icon}</span>
+                      <span className="font-medium text-gray-700">{item.label}</span>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-lg font-bold text-gray-900">{current}</div>
+                      <div className="text-xs text-gray-500">Goal: {item.target}</div>
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-600">Progress:</span>
+                      <span className="font-medium">{current} / {item.target}</span>
+                    </div>
+                    <div className="h-3 bg-gray-200 rounded-full overflow-hidden">
+                      <div
+                        className={`h-full transition-all ${
+                          progress >= 100 
+                            ? 'bg-green-500' 
+                            : progress >= 75 
+                              ? 'bg-yellow-500' 
+                              : 'bg-blue-500'
+                        }`}
+                        style={{ width: `${Math.min(progress, 100)}%` }}
+                      />
+                    </div>
+                    <div className="text-xs text-right text-gray-500">
+                      {progress.toFixed(0)}% Complete
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Record Daily Performance Section */}
+        <div className="bg-gradient-to-r from-green-50 to-blue-50 border border-green-200 rounded-lg p-6 mb-6">
+          <h3 className="text-xl font-bold text-green-900 mb-4 flex items-center gap-2">
+            📈 Record Daily Performance
+          </h3>
+          <div className="text-sm text-gray-600 mb-4">
+            {new Date(date).toLocaleDateString('en-US', { 
+              weekday: 'long', 
+              year: 'numeric', 
+              month: 'long', 
+              day: 'numeric' 
+            })}
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {/* Core Daily Activities */}
+          <div className="col-span-1 md:col-span-3">
+            <h4 className="text-lg font-semibold text-gray-800 mb-4 pb-2 border-b">Core Daily Activities</h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {[
+                { key: 'calls', label: 'Calls', icon: '📞', placeholder: '25' },
+                { key: 'appointments', label: 'Buyer Appointments', icon: '👥', placeholder: '1' },
+                { key: 'sellerAppts', label: 'Seller Appointments', icon: '🏠', placeholder: '1' },
+                { key: 'hoursWorked', label: 'Daily Hours', icon: '⏰', placeholder: '8', step: '0.25' },
+              ].map(item => {
+                const metricKey = item.key as MetricKey;
+                const target = targets[metricKey] || 0;
+                const current = formData[metricKey];
+                const progress = calculateProgress(current, target);
+
+                return (
+                  <div key={item.key} className="bg-white border border-gray-200 rounded-lg p-4">
+                    <Label className="text-sm font-medium flex items-center gap-2 mb-2">
+                      <span>{item.icon}</span>
+                      {item.label}
+                    </Label>
+                    <Input
+                      type="number"
+                      min="0"
+                      step={item.step || '1'}
+                      placeholder={item.placeholder}
+                      value={current || ''}
+                      onChange={(e) => 
+                        setFormData(prev => ({
+                          ...prev,
+                          [metricKey]: Number(e.target.value) || 0
+                        }))
+                      }
+                      className="mb-3"
+                    />
+                    
+                    {target > 0 && (
+                      <>
+                        <div className="flex justify-between text-xs text-gray-500 mb-1">
+                          <span>Target: {target.toFixed(metricKey === 'hoursWorked' ? 1 : 0)}</span>
+                          <span className={progress >= 100 ? 'text-green-600 font-medium' : 'text-gray-500'}>
+                            {progress}%
+                          </span>
+                        </div>
+                        <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+                          <div
+                            className={`h-full transition-all ${
+                              progress >= 100 
+                                ? 'bg-green-500' 
+                                : progress >= 75 
+                                  ? 'bg-yellow-500' 
+                                  : 'bg-blue-500'
+                            }`}
+                            style={{ width: `${Math.min(progress, 100)}%` }}
+                          />
+                        </div>
+                      </>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Business Development Activities */}
+          <div className="col-span-1 md:col-span-3 mt-6">
+            <h4 className="text-lg font-semibold text-gray-800 mb-4 pb-2 border-b">Business Development</h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {[
+                { key: 'cmasCompleted', label: 'CMAs Completed', icon: '📊', placeholder: '3' },
+                { key: 'offersWritten', label: 'Offers to Write', icon: '✍️', placeholder: '1' },
+                { key: 'showings', label: 'Showings', icon: '🔑', placeholder: '2' },
+                { key: 'appointmentsSet', label: 'Appointments Set', icon: '📅', placeholder: '2' },
+              ].map(item => {
+                const metricKey = item.key as MetricKey;
+                const target = targets[metricKey] || 0;
+                const current = formData[metricKey];
+                const progress = calculateProgress(current, target);
+
+                return (
+                  <div key={item.key} className="bg-white border border-gray-200 rounded-lg p-4">
+                    <Label className="text-sm font-medium flex items-center gap-2 mb-2">
+                      <span>{item.icon}</span>
+                      {item.label}
+                    </Label>
+                    <Input
+                      type="number"
+                      min="0"
+                      step="1"
+                      placeholder={item.placeholder}
+                      value={current || ''}
+                      onChange={(e) => 
+                        setFormData(prev => ({
+                          ...prev,
+                          [metricKey]: Number(e.target.value) || 0
+                        }))
+                      }
+                      className="mb-3"
+                    />
+                    
+                    {target > 0 && (
+                      <>
+                        <div className="flex justify-between text-xs text-gray-500 mb-1">
+                          <span>Target: {target.toFixed(0)}</span>
+                          <span className={progress >= 100 ? 'text-green-600 font-medium' : 'text-gray-500'}>
+                            {progress}%
+                          </span>
+                        </div>
+                        <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+                          <div
+                            className={`h-full transition-all ${
+                              progress >= 100 
+                                ? 'bg-green-500' 
+                                : progress >= 75 
+                                  ? 'bg-yellow-500' 
+                                  : 'bg-blue-500'
+                            }`}
+                            style={{ width: `${Math.min(progress, 100)}%` }}
+                          />
+                        </div>
+                      </>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Client Acquisition */}
+          <div className="col-span-1 md:col-span-3 mt-6">
+            <h4 className="text-lg font-semibold text-gray-800 mb-4 pb-2 border-b">Client Acquisition</h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {[
+                { key: 'buyersSignedUp', label: 'Buyers Signed', icon: '✅', placeholder: '1' },
+                { key: 'listingsSigned', label: 'Listings Signed', icon: '📋', placeholder: '1' },
+              ].map(item => {
+                const metricKey = item.key as MetricKey;
+                const target = targets[metricKey] || 0;
+                const current = formData[metricKey];
+                const progress = calculateProgress(current, target);
+
+                return (
+                  <div key={item.key} className="bg-white border border-gray-200 rounded-lg p-4">
+                    <Label className="text-sm font-medium flex items-center gap-2 mb-2">
+                      <span>{item.icon}</span>
+                      {item.label}
+                    </Label>
+                    <Input
+                      type="number"
+                      min="0"
+                      step="1"
+                      placeholder={item.placeholder}
+                      value={current || ''}
+                      onChange={(e) => 
+                        setFormData(prev => ({
+                          ...prev,
+                          [metricKey]: Number(e.target.value) || 0
+                        }))
+                      }
+                      className="mb-3"
+                    />
+                    
+                    {target > 0 && (
+                      <>
+                        <div className="flex justify-between text-xs text-gray-500 mb-1">
+                          <span>Target: {target.toFixed(0)}</span>
+                          <span className={progress >= 100 ? 'text-green-600 font-medium' : 'text-gray-500'}>
+                            {progress}%
+                          </span>
+                        </div>
+                        <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+                          <div
+                            className={`h-full transition-all ${
+                              progress >= 100 
+                                ? 'bg-green-500' 
+                                : progress >= 75 
+                                  ? 'bg-yellow-500' 
+                                  : 'bg-blue-500'
+                            }`}
+                            style={{ width: `${Math.min(progress, 100)}%` }}
+                          />
+                        </div>
+                      </>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+
+        <div className="flex justify-between items-center pt-6 mt-6 border-t border-gray-200">
+          <div className="text-sm text-gray-600">
+            Make sure to track all your daily activities for accurate performance analysis
+          </div>
+          <div className="flex gap-3">
+            <Button variant="outline" onClick={onClose} className="px-6">
+              Cancel
+            </Button>
+            <Button 
+              onClick={handleSubmit} 
+              className="px-6 bg-blue-600 hover:bg-blue-700"
+            >
+              💾 Save Daily Activities
+            </Button>
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+// Goals Modal Component
+interface GoalsModalProps {
+  goals: Goal[];
+  onSave: (goalData: any) => void;
+  onClose: () => void;
+}
+
+function GoalsModal({ goals, onSave, onClose }: GoalsModalProps) {
+  const currentMonth = new Date().toISOString().slice(0, 7); // YYYY-MM format
+  
+  // Find existing monthly goal for current month or create default
+  const existingGoal = goals.find(g => 
+    g.period === 'monthly' && 
+    g.effectiveDate?.startsWith(currentMonth)
+  );
+  
+  const [goalData, setGoalData] = useState({
+    period: 'daily' as const,
+    effectiveDate: `${currentMonth}-01`,
+    calls: existingGoal?.calls || 25,
+    callsAnswered: (existingGoal as any)?.callsAnswered || 12,
+    appointments: existingGoal?.appointments || 1,
+    sellerAppointments: (existingGoal as any)?.sellerAppointments || 1,
+    buyersSignedUp: (existingGoal as any)?.buyersSignedUp || 1,
+    listingsSigned: (existingGoal as any)?.listingsSigned || 1,
+    cmasCompleted: (existingGoal as any)?.cmasCompleted || 3,
+    hours: existingGoal?.hours || 8,
+    offersToWrite: (existingGoal as any)?.offersToWrite || 1,
+    monthlyClosings: existingGoal?.monthlyClosings || 2,
+  });
+
+  const handleSave = () => {
+    onSave({
+      period: goalData.period,
+      effectiveDate: goalData.effectiveDate,
+      calls: Number(goalData.calls) || null,
+      callsAnswered: Number(goalData.callsAnswered) || null,
+      appointments: Number(goalData.appointments) || null,
+      sellerAppointments: Number(goalData.sellerAppointments) || null,
+      buyersSignedUp: Number(goalData.buyersSignedUp) || null,
+      listingsSigned: Number(goalData.listingsSigned) || null,
+      cmasCompleted: Number(goalData.cmasCompleted) || null,
+      hours: goalData.hours ? String(goalData.hours) : null,
+      offersToWrite: Number(goalData.offersToWrite) || null,
+      monthlyClosings: Number(goalData.monthlyClosings) || null,
+    });
+  };
+
+  const handleInputChange = (field: string, value: string | number) => {
+    setGoalData(prev => ({ ...prev, [field]: value }));
+  };
+
+  return (
+    <Dialog open onOpenChange={onClose}>
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle className="text-2xl font-bold text-gray-900 mb-2">
+            🎯 Set Your Activity Goals
+          </DialogTitle>
+          <p className="text-gray-600">
+            Set targets, record performance, and track your progress all in one place.
+          </p>
+        </DialogHeader>
+        
+        <div className="bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 rounded-lg p-6 mb-6">
+          <h3 className="text-xl font-bold text-blue-900 mb-6 flex items-center gap-2">
+            📊 Set Your Activity Goals
+          </h3>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Calls */}
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <Label htmlFor="calls" className="text-sm font-medium">Calls</Label>
+                <select className="text-sm text-gray-600 border-none bg-transparent" defaultValue="Daily">
+                  <option>Daily</option>
+                  <option>Weekly</option>
+                  <option>Monthly</option>
+                </select>
+              </div>
+              <div className="relative">
+                <input
+                  id="calls"
+                  type="number"
+                  min="0"
+                  placeholder="25"
+                  className="w-full px-4 py-3 text-3xl font-bold text-center border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  value={goalData.calls || ''}
+                  onChange={(e) => handleInputChange('calls', e.target.value)}
+                />
+              </div>
+            </div>
+
+            {/* Buyer Appointments */}
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <Label htmlFor="buyerAppts" className="text-sm font-medium">Buyer Appointments</Label>
+                <select className="text-sm text-gray-600 border-none bg-transparent" defaultValue="Daily">
+                  <option>Daily</option>
+                  <option>Weekly</option>
+                  <option>Monthly</option>
+                </select>
+              </div>
+              <div className="relative">
+                <input
+                  id="buyerAppts"
+                  type="number"
+                  min="0"
+                  placeholder="1"
+                  className="w-full px-4 py-3 text-3xl font-bold text-center border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  value={goalData.appointments || ''}
+                  onChange={(e) => handleInputChange('appointments', e.target.value)}
+                />
+              </div>
+            </div>
+
+            {/* Seller Appointments */}
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <Label htmlFor="sellerAppts" className="text-sm font-medium">Seller Appointments</Label>
+                <select className="text-sm text-gray-600 border-none bg-transparent" defaultValue="Daily">
+                  <option>Daily</option>
+                  <option>Weekly</option>
+                  <option>Monthly</option>
+                </select>
+              </div>
+              <div className="relative">
+                <input
+                  id="sellerAppts"
+                  type="number"
+                  min="0"
+                  placeholder="1"
+                  className="w-full px-4 py-3 text-3xl font-bold text-center border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  value={goalData.sellerAppointments || ''}
+                  onChange={(e) => handleInputChange('sellerAppointments', e.target.value)}
+                />
+              </div>
+            </div>
+
+            {/* Buyers Signed */}
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <Label htmlFor="buyersSignedUp" className="text-sm font-medium">Buyers Signed</Label>
+                <select className="text-sm text-gray-600 border-none bg-transparent" defaultValue="Weekly">
+                  <option>Daily</option>
+                  <option>Weekly</option>
+                  <option>Monthly</option>
+                </select>
+              </div>
+              <div className="relative">
+                <input
+                  id="buyersSignedUp"
+                  type="number"
+                  min="0"
+                  placeholder="1"
+                  className="w-full px-4 py-3 text-3xl font-bold text-center border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  value={goalData.buyersSignedUp || ''}
+                  onChange={(e) => handleInputChange('buyersSignedUp', e.target.value)}
+                />
+              </div>
+            </div>
+
+            {/* Listings Signed */}
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <Label htmlFor="listingsSigned" className="text-sm font-medium">Listings Signed</Label>
+                <select className="text-sm text-gray-600 border-none bg-transparent" defaultValue="Weekly">
+                  <option>Daily</option>
+                  <option>Weekly</option>
+                  <option>Monthly</option>
+                </select>
+              </div>
+              <div className="relative">
+                <input
+                  id="listingsSigned"
+                  type="number"
+                  min="0"
+                  placeholder="1"
+                  className="w-full px-4 py-3 text-3xl font-bold text-center border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  value={goalData.listingsSigned || ''}
+                  onChange={(e) => handleInputChange('listingsSigned', e.target.value)}
+                />
+              </div>
+            </div>
+
+            {/* CMAs Completed */}
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <Label htmlFor="cmasCompleted" className="text-sm font-medium">CMAs Completed</Label>
+                <select className="text-sm text-gray-600 border-none bg-transparent" defaultValue="Weekly">
+                  <option>Daily</option>
+                  <option>Weekly</option>
+                  <option>Monthly</option>
+                </select>
+              </div>
+              <div className="relative">
+                <input
+                  id="cmasCompleted"
+                  type="number"
+                  min="0"
+                  placeholder="3"
+                  className="w-full px-4 py-3 text-3xl font-bold text-center border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  value={goalData.cmasCompleted || ''}
+                  onChange={(e) => handleInputChange('cmasCompleted', e.target.value)}
+                />
+              </div>
+            </div>
+
+            {/* Daily Hours */}
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <Label htmlFor="hours" className="text-sm font-medium">Daily Hours</Label>
+                <select className="text-sm text-gray-600 border-none bg-transparent" defaultValue="Daily">
+                  <option>Daily</option>
+                  <option>Weekly</option>
+                  <option>Monthly</option>
+                </select>
+              </div>
+              <div className="relative">
+                <input
+                  id="hours"
+                  type="number"
+                  step="0.5"
+                  min="0"
+                  placeholder="8"
+                  className="w-full px-4 py-3 text-3xl font-bold text-center border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  value={goalData.hours || ''}
+                  onChange={(e) => handleInputChange('hours', e.target.value)}
+                />
+              </div>
+            </div>
+
+            {/* Offers to Write */}
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <Label htmlFor="offersToWrite" className="text-sm font-medium">Offers to Write</Label>
+                <select className="text-sm text-gray-600 border-none bg-transparent" defaultValue="Weekly">
+                  <option>Daily</option>
+                  <option>Weekly</option>
+                  <option>Monthly</option>
+                </select>
+              </div>
+              <div className="relative">
+                <input
+                  id="offersToWrite"
+                  type="number"
+                  min="0"
+                  placeholder="1"
+                  className="w-full px-4 py-3 text-3xl font-bold text-center border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  value={goalData.offersToWrite || ''}
+                  onChange={(e) => handleInputChange('offersToWrite', e.target.value)}
+                />
+              </div>
+            </div>
+
+            {/* Monthly Closings */}
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <Label htmlFor="monthlyClosings" className="text-sm font-medium">Monthly Closings</Label>
+                <select className="text-sm text-gray-600 border-none bg-transparent" defaultValue="Monthly">
+                  <option>Daily</option>
+                  <option>Weekly</option>
+                  <option>Monthly</option>
+                </select>
+              </div>
+              <div className="relative">
+                <input
+                  id="monthlyClosings"
+                  type="number"
+                  min="0"
+                  placeholder="2"
+                  className="w-full px-4 py-3 text-3xl font-bold text-center border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  value={goalData.monthlyClosings || ''}
+                  onChange={(e) => handleInputChange('monthlyClosings', e.target.value)}
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div className="space-y-4">
+          <div>
+            <Label htmlFor="calls-old" className="hidden">Phone Calls (Legacy)</Label>
+            <div style={{ 
+              border: '3px solid #374151', 
+              borderRadius: '8px', 
+              backgroundColor: '#ffffff',
+              boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)'
+            }}>
+              <input
+                id="calls"
+                type="number"
+                min="0"
+                placeholder="e.g., 100"
+                style={{
+                  border: 'none',
+                  borderRadius: '5px',
+                  padding: '12px',
+                  width: '100%',
+                  fontSize: '14px',
+                  outline: 'none',
+                  backgroundColor: 'transparent',
+                }}
+                value={goalData.calls || ''}
+                onChange={(e) => handleInputChange('calls', e.target.value)}
+              />
+            </div>
+          </div>
+
+          <div>
+            <Label htmlFor="callsAnswered">Calls Answered</Label>
+            <div style={{ 
+              border: '3px solid #374151', 
+              borderRadius: '8px', 
+              backgroundColor: '#ffffff',
+              boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)'
+            }}>
+              <input
+                id="callsAnswered"
+                type="number"
+                min="0"
+                placeholder="e.g., 50"
+                style={{
+                  border: 'none',
+                  borderRadius: '5px',
+                  padding: '12px',
+                  width: '100%',
+                  fontSize: '14px',
+                  outline: 'none',
+                  backgroundColor: 'transparent',
+                }}
+                value={goalData.callsAnswered || ''}
+                onChange={(e) => handleInputChange('callsAnswered', e.target.value)}
+              />
+            </div>
+          </div>
+
+          <div>
+            <Label htmlFor="appointments">Appointments Set</Label>
+            <div style={{ 
+              border: '3px solid #374151', 
+              borderRadius: '8px', 
+              backgroundColor: '#ffffff',
+              boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)'
+            }}>
+              <input
+                id="appointments"
+                type="number"
+                min="0"
+                placeholder="e.g., 20"
+                style={{
+                  border: 'none',
+                  borderRadius: '5px',
+                  padding: '12px',
+                  width: '100%',
+                  fontSize: '14px',
+                  outline: 'none',
+                  backgroundColor: 'transparent',
+                }}
+                value={goalData.appointments || ''}
+                onChange={(e) => handleInputChange('appointments', e.target.value)}
+              />
+            </div>
+          </div>
+        </div>
+
+        <div className="flex justify-between items-center pt-6 mt-6 border-t border-gray-200">
+          <div className="text-sm text-gray-600">
+            Set your activity goals to track daily performance and achieve consistency
+          </div>
+          <div className="flex gap-3">
+            <Button variant="outline" onClick={onClose} className="px-6">
+              Cancel
+            </Button>
+            <Button 
+              onClick={handleSave} 
+              className="px-6 bg-purple-600 hover:bg-purple-700"
+            >
+              🎯 Save Goals
+            </Button>
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
