@@ -2,7 +2,13 @@ import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-// Dialog imports removed - now using div-based modal
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import {
   Form,
   FormControl,
@@ -107,26 +113,17 @@ export default function AddPropertyModal({ isOpen, onClose }: AddPropertyModalPr
     createPropertyMutation.mutate(processedData);
   };
 
-  if (!isOpen) return null;
-
   return (
-    <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-lg shadow-lg w-full max-w-[600px] max-h-[90vh] overflow-y-auto">
-        <div className="flex items-center justify-between p-6 border-b">
-          <div>
-            <h2 className="text-lg font-semibold">Add New Property</h2>
-            {/* Property usage indicator */}
-            <div className="text-sm text-gray-600 mt-2">
-              Properties: {propertyUsage.current}/{propertyUsage.limit === Infinity ? '∞' : propertyUsage.limit}</div>
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="max-w-[600px] max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle>Add New Property</DialogTitle>
+          {/* Property usage indicator */}
+          <div className="text-sm text-gray-600 mt-2">
+            Properties: {propertyUsage.current}/{propertyUsage.limit === Infinity ? '∞' : propertyUsage.limit}
           </div>
-          <button
-            onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 text-xl font-bold"
-          >
-            ×
-          </button>
-        </div>
-        <div className="p-6">
+        </DialogHeader>
+        <div className="space-y-4">
             {propertyUsage.limit !== Infinity && (
               <div className="w-full bg-gray-200 rounded-full h-2 mt-1">
                 <div 
@@ -461,7 +458,7 @@ export default function AddPropertyModal({ isOpen, onClose }: AddPropertyModalPr
           </form>
         </Form>
         </div>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }
