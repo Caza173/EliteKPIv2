@@ -369,10 +369,25 @@ export class DatabaseStorage implements IStorage {
     await db.delete(timeEntries).where(eq(timeEntries.userId, userId));
     await db.delete(activities).where(eq(activities.userId, userId));
     await db.delete(activityActuals).where(eq(activityActuals.userId, userId));
+    await db.delete(efficiencyScores).where(eq(efficiencyScores.userId, userId));
     await db.delete(cmas).where(eq(cmas.userId, userId));
     await db.delete(showings).where(eq(showings.userId, userId));
     await db.delete(mileageLogs).where(eq(mileageLogs.userId, userId));
     await db.delete(goals).where(eq(goals.userId, userId));
+    await db.delete(referrals).where(eq(referrals.referrerId, userId));
+    await db.delete(smartTasks).where(eq(smartTasks.userId, userId));
+    await db.delete(propertyDeadlines).where(eq(propertyDeadlines.userId, userId));
+    await db.delete(competitionParticipants).where(eq(competitionParticipants.userId, userId));
+    await db.delete(gpsLocations).where(eq(gpsLocations.userId, userId));
+    await db.delete(notifications).where(eq(notifications.userId, userId));
+    await db.delete(personalizedInsights).where(eq(personalizedInsights.userId, userId));
+    await db.delete(mlsSettings).where(eq(mlsSettings.userId, userId));
+    await db.delete(userLearningProgress).where(eq(userLearningProgress.userId, userId));
+    await db.delete(userCourseProgress).where(eq(userCourseProgress.userId, userId));
+    await db.delete(userLessonProgress).where(eq(userLessonProgress.userId, userId));
+    await db.delete(userLearningAchievements).where(eq(userLearningAchievements.userId, userId));
+    await db.delete(learningStreaks).where(eq(learningStreaks.userId, userId));
+    await db.delete(feedback).where(eq(feedback.userId, userId));
   }
 
   // Property operations
@@ -687,31 +702,53 @@ export class DatabaseStorage implements IStorage {
     // Add mileage gas costs to the breakdown
     const mileageGasData = await db
       .select({
-        gasCost: sql<number>`sum(${mileageLogs.gasCost}::numeric)`
+        gasCost: sql<number>`sum(${mileageLogs.gasCost}::numeric)`,
+        count: count()
       })
       .from(mileageLogs)
       .where(eq(mileageLogs.userId, userId));
 
     const totalGasCosts = mileageGasData[0]?.gasCost ? parseFloat(mileageGasData[0].gasCost.toString()) : 0;
+    const mileageLogCount = mileageGasData[0]?.count || 0;
     const grandTotal = totalExpenses + totalGasCosts;
 
-    // Format results with percentages
-    const breakdown = results.map(result => ({
-      category: result.category,
-      total: parseFloat(result.total.toString()),
-      count: result.count,
-      percentage: grandTotal > 0 ? parseFloat(((parseFloat(result.total.toString()) / grandTotal) * 100).toFixed(1)) : 0
-    }));
+    // Create a map to combine categories
+    const categoryMap = new Map<string, { total: number; count: number }>();
 
-    // Add mileage/gas costs as separate category if there are any
-    if (totalGasCosts > 0) {
-      breakdown.push({
-        category: 'mileage',
-        total: totalGasCosts,
-        count: 1, // Represents aggregated mileage entries
-        percentage: grandTotal > 0 ? parseFloat(((totalGasCosts / grandTotal) * 100).toFixed(1)) : 0
+    // Process regular expenses
+    results.forEach(result => {
+      const category = result.category;
+      const total = parseFloat(result.total.toString());
+      const count = result.count;
+      
+      if (category === 'mileage' || category === 'gas') {
+        // Combine mileage and gas into single mileage category
+        const existing = categoryMap.get('mileage') || { total: 0, count: 0 };
+        categoryMap.set('mileage', {
+          total: existing.total + total,
+          count: existing.count + count
+        });
+      } else {
+        categoryMap.set(category, { total, count });
+      }
+    });
+
+    // Add mileage log costs to the mileage category
+    if (totalGasCosts > 0 || categoryMap.has('mileage')) {
+      const existing = categoryMap.get('mileage') || { total: 0, count: 0 };
+      categoryMap.set('mileage', {
+        total: existing.total + totalGasCosts,
+        count: existing.count + mileageLogCount
       });
     }
+
+    // Convert map to array with percentages
+    const breakdown = Array.from(categoryMap.entries()).map(([category, data]) => ({
+      category,
+      total: data.total,
+      count: data.count,
+      percentage: grandTotal > 0 ? parseFloat(((data.total / grandTotal) * 100).toFixed(1)) : 0
+    }));
 
     return breakdown.sort((a, b) => b.total - a.total);
   }
@@ -1065,9 +1102,9 @@ export class DatabaseStorage implements IStorage {
       ? totalVolume / closedProperties.length 
       : 0;
     
-    // Average commission
-    const avgCommission = userCommissions.length > 0 
-      ? totalRevenue / userCommissions.length 
+    // Average commission (revenue per closed property)
+    const avgCommission = closedProperties.length > 0 
+      ? totalRevenue / closedProperties.length 
       : 0;
 
     // This month revenue
@@ -1097,6 +1134,14 @@ export class DatabaseStorage implements IStorage {
     
     const pendingValue = pending
       .reduce((sum, p) => sum + parseFloat(p.acceptedPrice || p.listingPrice || '0'), 0);
+
+    // Calculate expected revenue from active, under contract, and pending properties
+    const activeListingProperties = userProperties.filter(p => p.status === 'listed');
+    const activeListingValue = activeListingProperties
+      .reduce((sum, p) => sum + parseFloat(p.listingPrice || '0'), 0);
+
+    // Expected revenue calculation (using standard 3% commission rate as estimate)
+    const expectedRevenue = (underContractValue + pendingValue + activeListingValue) * 0.03;
 
     // Calculate average transaction period
     const avgTransactionPeriod = closedProperties.length > 0 
@@ -1212,6 +1257,7 @@ export class DatabaseStorage implements IStorage {
       underContractValue,
       pendingCount: pending.length,
       pendingValue,
+      expectedRevenue, // Add expected revenue to the returned metrics
       totalExpenses,
       ytdHours,
       totalShowings: userShowings.length,

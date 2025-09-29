@@ -88,7 +88,6 @@ const subscriptionPlans = [
       "Team collaboration tools",
       "Custom dashboards",
       "AI-powered pricing strategies",
-      "Market Timing AI & Offer Strategies",
       "Office Challenges & Competition Hub",
       "Custom branding",
       "Priority support",

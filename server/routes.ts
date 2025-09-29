@@ -7,9 +7,8 @@ import { generateMarketData, getLocationByZipcode, NH_ZIPCODES, getMarketData } 
 import { attomAPI } from "./attom-api";
 import { ACHIEVEMENTS, calculateAchievementProgress, calculateAgentLevel, updatePerformanceStreaks } from "./achievements";
 import sgMail from '@sendgrid/mail';
-import { setupAuth, isAuthenticated, isAdminAuthenticated, logout } from "./auth";
+import { setupAuth, isAuthenticated, isAdminAuthenticated, logout, login } from "./auth";
 import { aiStrategyService } from "./ai-strategies";
-import { offerStrategyService } from "./offer-strategies";
 import { hashPassword, verifyPassword, validatePasswordStrength } from './utils/auth';
 import adminRoutes from './admin/routes';
 import OpenAI from "openai";
@@ -63,21 +62,40 @@ async function calculateComprehensiveEfficiencyScore(userId: string, daysBack: n
     storage.getActivityActuals(userId, startDateStr, endDateStr)
   ]);
   
-  // 1. Conversion Efficiency (0-100): Based on closed properties vs total properties
+  // Calculate basic counts first
   const totalProperties = properties.length;
   const closedProperties = properties.filter(p => p.status === 'closed').length;
-  let conversionEfficiency = totalProperties > 0 ? Math.min((closedProperties / totalProperties) * 100, 100) : 85;
+  
+  // Check if user has any meaningful data at all
+  const hasAnyData = totalProperties > 0 || actuals.length > 0 || timeEntries.length > 0 || commissions.length > 0 || expenses.length > 0;
+  
+  // If no data at all, return very low scores to indicate empty state
+  if (!hasAnyData) {
+    return {
+      overallScore: 0,
+      breakdown: {
+        conversionEfficiency: 0,
+        activityConsistency: 0,
+        timeManagement: 0,
+        dealVelocity: 0,
+        roiPerformance: 0
+      }
+    };
+  }
+
+  // 1. Conversion Efficiency (0-100): Based on closed properties vs total properties
+  let conversionEfficiency = totalProperties > 0 ? Math.min((closedProperties / totalProperties) * 100, 100) : 0;
   
   // For demo purposes, enhance the score based on sample data characteristics
-  if (totalProperties > 0) {
-    // If we have properties, give a reasonable score even if no closings yet
-    conversionEfficiency = Math.max(conversionEfficiency, 65);
+  if (totalProperties > 0 && conversionEfficiency === 0) {
+    // If we have properties but no closings yet, give a moderate score
+    conversionEfficiency = 65;
   }
   
   // 2. Activity Consistency (0-100): Based on daily activity tracking
   const activeDays = actuals.length;
   const maxPossibleDays = Math.min(daysBack, 30); // Cap at 30 days for scoring
-  let activityConsistency = activeDays > 0 ? Math.min((activeDays / maxPossibleDays) * 100, 100) : 72;
+  let activityConsistency = activeDays > 0 ? Math.min((activeDays / maxPossibleDays) * 100, 100) : 0;
   
   // If we have activity data, boost the score
   if (activeDays > 0) {
@@ -88,7 +106,7 @@ async function calculateComprehensiveEfficiencyScore(userId: string, daysBack: n
   const totalHours = timeEntries.reduce((sum, entry) => sum + parseFloat(entry.hours), 0);
   const avgHoursPerProperty = totalProperties > 0 ? totalHours / totalProperties : 0;
   // Score higher for efficient time use (less hours per property, but not too few)
-  let timeManagement = 69;
+  let timeManagement = 0; // Start with 0 instead of 69
   if (avgHoursPerProperty > 0) {
     if (avgHoursPerProperty >= 8 && avgHoursPerProperty <= 20) {
       timeManagement = 90; // Optimal range
@@ -104,7 +122,7 @@ async function calculateComprehensiveEfficiencyScore(userId: string, daysBack: n
   
   // 4. Deal Velocity (0-100): Based on average days from listing to closing
   const soldProperties = properties.filter(p => p.status === 'closed' && p.listingDate && p.soldDate);
-  let dealVelocity = 65; // Default good score for demo
+  let dealVelocity = 0; // Start with 0 instead of 65
   if (soldProperties.length > 0) {
     const avgDaysToClose = soldProperties.reduce((sum, prop) => {
       const listingDate = new Date(prop.listingDate!);
@@ -133,7 +151,7 @@ async function calculateComprehensiveEfficiencyScore(userId: string, daysBack: n
   // 5. ROI Performance (0-100): Based on commission revenue vs expenses
   const totalRevenue = commissions.reduce((sum, comm) => sum + parseFloat(comm.amount), 0);
   const totalExpenses = expenses.reduce((sum, exp) => sum + parseFloat(exp.amount), 0);
-  let roiPerformance = 88; // Default good score for demo
+  let roiPerformance = 0; // Start with 0 instead of 88
   if (totalExpenses > 0 && totalRevenue > 0) {
     const roiRatio = totalRevenue / totalExpenses;
     if (roiRatio >= 5) {
@@ -653,6 +671,63 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.post('/api/auth/signup', async (req: any, res) => {
+    try {
+      const { firstName, lastName, email, password } = req.body;
+      
+      if (!firstName || !lastName || !email || !password) {
+        return res.status(400).json({ message: "First name, last name, email, and password are required" });
+      }
+
+      // Validate password strength
+      const passwordValidation = validatePasswordStrength(password);
+      if (!passwordValidation.isValid) {
+        return res.status(400).json({ 
+          message: "Password does not meet security requirements",
+          errors: passwordValidation.errors
+        });
+      }
+
+      // Check if user already exists
+      const userId = `user-${email.split('@')[0]}`;
+      const existingUser = await storage.getUser(userId);
+      
+      if (existingUser) {
+        return res.status(409).json({ message: "An account with this email already exists" });
+      }
+
+      // Create new user account with hashed password
+      const hashedPassword = await hashPassword(password);
+      
+      const dbUser = await storage.upsertUser({
+        id: userId,
+        email: email.toLowerCase().trim(),
+        firstName: firstName.trim(),
+        lastName: lastName.trim(),
+        profileImageUrl: null,
+        subscriptionStatus: "active",
+        subscriptionId: null,
+        passwordHash: hashedPassword,
+        lastLoginAt: new Date(),
+        createdAt: new Date()
+      });
+      
+      console.log(`Created new user account for ${email} (${firstName} ${lastName}) with secure password hash`);
+      
+      // Set session-like authentication
+      req.user = {
+        id: userId,
+        username: email.split('@')[0],
+        isAdmin: false
+      };
+      
+      res.status(201).json({ success: true, user: dbUser });
+    } catch (error) {
+      console.error("Error during signup:", error);
+      res.status(500).json({ message: "Signup failed" });
+    }
+  });
+
   app.post('/api/auth/reset-password', async (req: any, res) => {
     try {
       const { email } = req.body;
@@ -758,6 +833,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.redirect('/');
     } catch (error) {
       console.error("Error during logout:", error);
+      // Fallback - still redirect to home
+      res.redirect('/');
+    }
+  });
+
+  // GET login route for SSO/development - logs in and redirects to dashboard
+  app.get('/api/login', async (req: any, res) => {
+    try {
+      // Call login function to set authentication state
+      login();
+      
+      // Redirect to dashboard
+      res.redirect('/');
+    } catch (error) {
+      console.error("Error during login:", error);
       // Fallback - still redirect to home
       res.redirect('/');
     }
@@ -1492,7 +1582,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           { activity: "Showing", hours: "1.5", description: "Property showing and follow-up" },
           { activity: "Negotiation", hours: "2.0", description: "Offer negotiation and communication" },
           { activity: "Administrative", hours: "1.0", description: "File management and documentation" },
-          { activity: "Follow-up", hours: "0.5", description: "Client check-in and status update" }
+          { activity: "Follow-up", hours: "0.5", description: "Client check-in and status update" },
+          { activity: "Travel", hours: "0.75", description: "Travel to property showing and meetings" }
         ];
         
         for (let i = 0; i < Math.floor(Math.random() * 6) + 3; i++) {
@@ -1913,6 +2004,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get properties by lead source endpoint
+  app.get('/api/properties/by-lead-source/:leadSource', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const { leadSource } = req.params;
+      const properties = await storage.getProperties(userId);
+      
+      // Filter properties by lead source
+      const filteredProperties = properties.filter(property => 
+        property.leadSource === leadSource || 
+        (!property.leadSource && leadSource === 'other')
+      );
+      
+      res.json({
+        leadSource: leadSource.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
+        rawLeadSource: leadSource,
+        properties: filteredProperties,
+        count: filteredProperties.length
+      });
+    } catch (error) {
+      console.error("Error fetching properties by lead source:", error);
+      res.status(500).json({ message: "Failed to fetch properties by lead source" });
+    }
+  });
+
   // Efficiency scores API endpoints
   app.get('/api/efficiency-scores', isAuthenticated, async (req: any, res) => {
     try {
@@ -2002,6 +2118,56 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Save efficiency score to database
+  app.post('/api/efficiency-score', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const { date, score, tier, inputs } = req.body;
+      
+      if (!date || !score || !tier || !inputs) {
+        return res.status(400).json({ message: "Missing required fields: date, score, tier, inputs" });
+      }
+
+      // Transform the data to match the database schema
+      const efficiencyScoreData = {
+        userId,
+        date,
+        overallScore: Math.round(parseFloat(score)),
+        scoreBreakdown: {
+          tier,
+          calculatorInputs: {
+            closedDeals: inputs.closedDeals,
+            prospectingCalls: inputs.prospectingCalls,
+            hoursWorked: inputs.hoursWorked,
+            revenue: inputs.revenue,
+            workingDays: inputs.workingDays,
+          },
+          calculatedMetrics: {
+            closingRate: (inputs.closedDeals / inputs.prospectingCalls) * 100,
+            revenuePerHour: inputs.revenue / inputs.hoursWorked,
+            dealsPerDay: inputs.closedDeals / inputs.workingDays,
+            callsPerDay: inputs.prospectingCalls / inputs.workingDays,
+            revenuePerDeal: inputs.revenue / inputs.closedDeals,
+            callsPerDeal: inputs.prospectingCalls / inputs.closedDeals,
+          }
+        }
+      };
+
+      // Save to database using the existing storage method
+      const savedScore = await storage.createEfficiencyScore(efficiencyScoreData);
+      
+      console.log("Efficiency score saved to database:", savedScore);
+      
+      res.status(201).json({ 
+        message: "Efficiency score saved successfully",
+        data: savedScore
+      });
+    } catch (error) {
+      console.error("Error saving efficiency score:", error);
+      res.status(500).json({ message: "Failed to save efficiency score" });
+    }
+  });
+
   // Property routes
   app.get('/api/properties', isAuthenticated, async (req: any, res) => {
     try {
@@ -2058,8 +2224,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
       
-      const propertyData = insertPropertySchema.parse(req.body);
-      console.log("Parsed property data:", propertyData);
+      let propertyData;
+      try {
+        propertyData = insertPropertySchema.parse(req.body);
+        console.log("Parsed property data:", propertyData);
+      } catch (validationError) {
+        console.error("Schema validation error:", validationError);
+        return res.status(400).json({ 
+          message: "Invalid property data", 
+          error: validationError instanceof Error ? validationError.message : "Validation failed",
+          details: validationError
+        });
+      }
       
       // Auto-generate property image based on address and property type
       function generatePropertyImageUrl(address: string, propertyType?: string): string {
@@ -2527,7 +2703,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Google Maps API key endpoint for client
+  // Mapbox access token endpoint for client
+  app.get('/api/mapbox-token', isAuthenticated, async (req: any, res) => {
+    try {
+      const token = process.env.MAPBOX_ACCESS_TOKEN;
+      if (!token) {
+        return res.status(404).json({ message: "Mapbox access token not configured" });
+      }
+      res.json({ token });
+    } catch (error) {
+      console.error("Error getting Mapbox access token:", error);
+      res.status(500).json({ message: "Failed to retrieve access token" });
+    }
+  });
+
+  // Google Maps API key endpoint for client (legacy support)
   app.get('/api/google-maps-key', isAuthenticated, async (req: any, res) => {
     try {
       const apiKey = process.env.GOOGLE_MAPS_API_KEY;
@@ -2541,7 +2731,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Distance calculation route using Google Maps API or ATTOM API fallback
+  // Distance calculation route using Mapbox API with Google Maps fallback
   app.post('/api/calculate-distance', isAuthenticated, async (req: any, res) => {
     try {
       const { origin, destination, roundTrip = false } = req.body;
@@ -2550,10 +2740,50 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Origin and destination are required" });
       }
 
+      const mapboxToken = process.env.MAPBOX_ACCESS_TOKEN;
       const googleMapsApiKey = process.env.GOOGLE_MAPS_API_KEY;
       const attomApiKey = process.env.ATTOM_API_KEY;
 
-      // Try Google Maps API first if available
+      // Try Mapbox API first if available
+      if (mapboxToken) {
+        try {
+          // First geocode the addresses to get coordinates
+          const originGeocode = await fetch(`https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(origin)}.json?access_token=${mapboxToken}&limit=1`);
+          const destinationGeocode = await fetch(`https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(destination)}.json?access_token=${mapboxToken}&limit=1`);
+          
+          const originData = await originGeocode.json();
+          const destinationData = await destinationGeocode.json();
+          
+          if (originData.features?.length > 0 && destinationData.features?.length > 0) {
+            const originCoords = originData.features[0].center; // [lng, lat]
+            const destCoords = destinationData.features[0].center; // [lng, lat]
+            
+            // Get driving directions
+            const directionsUrl = `https://api.mapbox.com/directions/v5/mapbox/driving/${originCoords[0]},${originCoords[1]};${destCoords[0]},${destCoords[1]}?access_token=${mapboxToken}&units=imperial&overview=simplified`;
+            const directionsResponse = await fetch(directionsUrl);
+            const directionsData = await directionsResponse.json();
+            
+            if (directionsData.routes && directionsData.routes.length > 0) {
+              const route = directionsData.routes[0];
+              const distanceInMiles = route.distance * 0.000621371; // Convert meters to miles
+              const durationMinutes = Math.round(route.duration / 60);
+              
+              return res.json({
+                distance: parseFloat(distanceInMiles.toFixed(1)),
+                duration: `${durationMinutes} min`,
+                origin: originData.features[0].place_name,
+                destination: destinationData.features[0].place_name,
+                roundTrip,
+                source: "Mapbox"
+              });
+            }
+          }
+        } catch (error) {
+          console.warn("Mapbox API failed, trying Google Maps fallback:", error);
+        }
+      }
+
+      // Fallback to Google Maps API if Mapbox fails
       if (googleMapsApiKey && googleMapsApiKey !== "YOUR_GOOGLE_MAPS_API_KEY_HERE") {
         try {
           const url = `https://maps.googleapis.com/maps/api/directions/json?origin=${encodeURIComponent(origin)}&destination=${encodeURIComponent(destination)}&key=${googleMapsApiKey}&units=imperial`;
@@ -2572,11 +2802,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
               origin: leg.start_address,
               destination: leg.end_address,
               roundTrip,
-              source: "Google Maps"
+              source: "Google Maps (fallback)"
             });
           }
         } catch (error) {
-          console.warn("Google Maps API failed, trying alternative method:", error);
+          console.warn("Google Maps API also failed, trying alternative method:", error);
         }
       }
 
@@ -3164,10 +3394,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
 
+  // Debug endpoint for environment variables (no auth for testing)
+  app.get('/api/debug/env', async (req: any, res) => {
+    res.json({
+      hasApiKey: !!process.env.SENDGRID_API_KEY,
+      keyLength: process.env.SENDGRID_API_KEY?.length || 0,
+      keyPrefix: process.env.SENDGRID_API_KEY?.substring(0, 3) || 'none',
+      startsWithSG: process.env.SENDGRID_API_KEY?.startsWith('SG.') || false,
+      keyEndsWithCorrectFormat: process.env.SENDGRID_API_KEY?.includes('.') || false
+    });
+  });
+
   // Email report endpoint
   app.post('/api/reports/email', isAuthenticated, async (req: any, res) => {
     try {
       console.log('📧 Email report request received');
+      console.log('🔐 ENV check - SENDGRID_API_KEY exists:', !!process.env.SENDGRID_API_KEY);
+      console.log('🔐 ENV check - SENDGRID_API_KEY value:', process.env.SENDGRID_API_KEY?.substring(0, 10) + '...');
+      
       const userId = req.user.id;
       const { email, reportType = 'Comprehensive' } = req.body;
       
@@ -3196,7 +3440,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const emailContent = generateReportEmail(reportData, reportType);
       
       console.log('📧 Sending email...');
-      const success = await sendEmail({
+      const emailResult = await sendEmail({
         to: email,
         from: 'nhcazateam@gmail.com', // Use verified sender
         subject: emailContent.subject,
@@ -3204,12 +3448,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
         html: emailContent.html
       });
 
-      if (success) {
+      if (emailResult.success) {
         console.log('✅ Email sent successfully');
         res.json({ message: 'Report sent successfully' });
       } else {
-        console.log('❌ Email sending failed');
-        res.status(500).json({ message: 'Failed to send email report' });
+        console.log('❌ Email sending failed:', emailResult.error);
+        res.status(500).json({ 
+          message: 'Failed to send email report',
+          error: emailResult.error,
+          details: 'Check server logs for more information'
+        });
       }
     } catch (error) {
       console.error('❌ Error sending email report:', error);
@@ -5566,115 +5814,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // MLS Settings routes
-  app.get("/api/mls-settings", isAuthenticated, async (req, res) => {
-    try {
-      const userId = req.user.id;
-      const settings = await storage.getMLSSettings(userId);
-      res.json(settings || null);
-    } catch (error: any) {
-      console.error("Error fetching MLS settings:", error);
-      res.status(500).json({ message: "Failed to fetch MLS settings" });
-    }
-  });
-
-  app.post("/api/mls-settings", isAuthenticated, async (req, res) => {
-    try {
-      const userId = req.user.id;
-      const { mlsSystem, mlsSystemName, apiKey, region, states, coverage } = req.body;
-
-      const settings = await storage.upsertMLSSettings(userId, {
-        mlsSystem,
-        mlsSystemName,
-        apiKey,
-        region,
-        states,
-        coverage,
-        isActive: true,
-      });
-
-      res.json(settings);
-    } catch (error: any) {
-      console.error("Error saving MLS settings:", error);
-      res.status(500).json({ message: "Failed to save MLS settings" });
-    }
-  });
-
-  app.delete("/api/mls-settings", isAuthenticated, async (req, res) => {
-    try {
-      const userId = req.user.id;
-      await storage.deleteMLSSettings(userId);
-      res.json({ message: "MLS settings deleted successfully" });
-    } catch (error: any) {
-      console.error("Error deleting MLS settings:", error);
-      res.status(500).json({ message: "Failed to delete MLS settings" });
-    }
-  });
-
-  // MLS Grid API routes
-  app.get("/api/mls-grid/systems", async (req, res) => {
-    try {
-      const { MLS_GRID_SYSTEMS, getMLSSystemsByState, getMLSSystemsByCity, getAvailableStates, getCitiesForState } = await import('./mls-grid-api');
-      
-      const { state, city } = req.query;
-      
-      if (state && city) {
-        const systems = getMLSSystemsByCity(city as string, state as string);
-        res.json(systems);
-      } else if (state) {
-        const systems = getMLSSystemsByState(state as string);
-        res.json(systems);
-      } else {
-        res.json(MLS_GRID_SYSTEMS);
-      }
-    } catch (error: any) {
-      console.error("Error fetching MLS systems:", error);
-      res.status(500).json({ message: "Failed to fetch MLS systems" });
-    }
-  });
-
-  app.get("/api/mls-grid/states", async (req, res) => {
-    try {
-      const { getAvailableStates } = await import('./mls-grid-api');
-      const states = getAvailableStates();
-      res.json(states);
-    } catch (error: any) {
-      console.error("Error fetching available states:", error);
-      res.status(500).json({ message: "Failed to fetch available states" });
-    }
-  });
-
-  app.get("/api/mls-grid/cities/:state", async (req, res) => {
-    try {
-      const { getCitiesForState } = await import('./mls-grid-api');
-      const { state } = req.params;
-      const cities = getCitiesForState(state);
-      res.json(cities);
-    } catch (error: any) {
-      console.error("Error fetching cities for state:", error);
-      res.status(500).json({ message: "Failed to fetch cities for state" });
-    }
-  });
-
-  app.post("/api/mls-grid/test-connection", isAuthenticated, async (req, res) => {
-    try {
-      const { apiKey, originatingSystem } = req.body;
-      
-      if (!apiKey || !originatingSystem) {
-        return res.status(400).json({ message: "API key and originating system are required" });
-      }
-
-      const { MLSGridAPIService } = await import('./mls-grid-api');
-      const mlsAPI = new MLSGridAPIService(apiKey);
-      const result = await mlsAPI.testConnection(originatingSystem);
-      
-      res.json(result);
-    } catch (error: any) {
-      console.error("Error testing MLS connection:", error);
-      res.status(500).json({ message: "Failed to test MLS connection" });
-    }
-  });
-
   // Property Lookup routes
   app.post("/api/property-lookup", isAuthenticated, async (req, res) => {
     try {
@@ -6565,6 +6704,10 @@ Please format the script as a cohesive conversation that flows naturally from op
       res.status(500).json({ message: "Failed to fetch feedback updates" });
     }
   });
+
+  // Activity tracking routes
+  const activityTrackingRoutes = (await import('./activity-tracking')).default;
+  app.use('/api', activityTrackingRoutes);
 
   // Admin routes
   const adminRoutes = (await import('./admin/routes')).default;

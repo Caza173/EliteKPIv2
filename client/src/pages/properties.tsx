@@ -10,11 +10,13 @@ import { useToast } from "@/hooks/use-toast";
 import { isUnauthorizedError } from "@/lib/authUtils";
 import PropertyCard from "@/components/properties/property-card";
 import AddPropertyModal from "@/components/properties/add-property-modal";
+import TestModal from "@/components/properties/test-modal";
 import ScheduleShowingModal from "@/components/modals/schedule-showing-modal";
 import PropertyDetailsSheet from "@/components/properties/property-details-sheet";
 import type { Property, Activity } from "@shared/schema";
 
 export default function Properties() {
+  console.log("Properties component is mounting...");
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isShowingModalOpen, setIsShowingModalOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("showings");
@@ -357,7 +359,10 @@ export default function Properties() {
                 Add Showing
               </Button>
               <Button
-                onClick={() => setIsAddModalOpen(true)}
+                onClick={() => {
+                  console.log('Add Property button clicked, isAddModalOpen:', isAddModalOpen);
+                  setIsAddModalOpen(true);
+                }}
                 variant="outline"
                 className="flex items-center gap-2"
               >
@@ -451,6 +456,7 @@ export default function Properties() {
         </TabsContent>
       </Tabs>
 
+      {/* Modals */}
       <AddPropertyModal 
         isOpen={isAddModalOpen} 
         onClose={() => setIsAddModalOpen(false)} 

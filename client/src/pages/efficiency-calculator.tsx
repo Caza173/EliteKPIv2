@@ -1,323 +1,124 @@
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Calculator, TrendingUp, Star, ArrowRight } from "lucide-react";
+import React, { useState, useEffect } from "react";
 
-interface FormData {
-  closedDeals: string;
-  prospectingCalls: string;
-  hoursWorked: string;
-  revenue: string;
-  activeDays: string;
-}
-
-interface EfficiencyScore {
-  overall: number;
-  dealClosingRate: number;
-  callEfficiency: number;
-  timeEfficiency: number;
-  revenuePerHour: number;
-}
-
-export default function EfficiencyCalculator() {
-  const [formData, setFormData] = useState<FormData>({
-    closedDeals: "",
-    prospectingCalls: "",
-    hoursWorked: "",
-    revenue: "",
-    activeDays: "",
+export default function AgentEfficiencyScore() {
+  const [inputs, setInputs] = useState({
+    closedDeals: 32,
+    prospectingCalls: 2500,
+    hoursWorked: 1440,
+    revenue: 185000,
+    workingDays: 340,
   });
 
-  const [score, setScore] = useState<EfficiencyScore | null>(null);
-  const [showResults, setShowResults] = useState(false);
+  const [scoreData, setScoreData] = useState({ score: "0", tier: "" });
+  const [history, setHistory] = useState([]);
 
-  const handleInputChange = (field: keyof FormData, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+  const getTier = (score: number): string => {
+    if (score >= 85) return "Platinum";
+    if (score >= 70) return "Gold";
+    if (score >= 55) return "Silver";
+    if (score >= 40) return "Bronze";
+    return "Needs Work";
   };
 
-  const calculateEfficiency = () => {
-    const deals = parseFloat(formData.closedDeals) || 0;
-    const calls = parseFloat(formData.prospectingCalls) || 0;
-    const hours = parseFloat(formData.hoursWorked) || 0;
-    const revenue = parseFloat(formData.revenue) || 0;
-    const days = parseFloat(formData.activeDays) || 0;
+  const calculateScore = () => {
+    const { closedDeals, prospectingCalls, hoursWorked, revenue, workingDays } = inputs;
+    const closingRate = (closedDeals / prospectingCalls) * 100;
+    const revenuePerHour = revenue / hoursWorked;
+    const dealsPerDay = closedDeals / workingDays;
+    const callsPerDay = prospectingCalls / workingDays;
+    const revenuePerDeal = revenue / closedDeals;
+    const callsPerDeal = prospectingCalls / closedDeals;
 
-    if (deals === 0 && calls === 0 && hours === 0 && revenue === 0 && days === 0) {
-      return;
-    }
+    const score = {
+      closingRate: closingRate >= 4 ? 100 : closingRate >= 2 ? 60 : closingRate >= 1 ? 35 : 15,
+      revenuePerHour: revenuePerHour >= 300 ? 100 : revenuePerHour >= 200 ? 80 : revenuePerHour >= 100 ? 60 : 40,
+      dealsPerDay: dealsPerDay >= 0.25 ? 100 : dealsPerDay >= 0.15 ? 75 : dealsPerDay >= 0.1 ? 55 : 35,
+      callsPerDay: callsPerDay >= 20 ? 100 : callsPerDay >= 15 ? 75 : callsPerDay >= 10 ? 50 : 30,
+      revenuePerDeal: revenuePerDeal >= 10000 ? 100 : revenuePerDeal >= 8000 ? 75 : revenuePerDeal >= 6000 ? 60 : 40,
+      callsPerDeal: callsPerDeal <= 40 ? 100 : callsPerDeal <= 60 ? 70 : callsPerDeal <= 80 ? 50 : 30,
+    };
 
-    // Calculate efficiency metrics
-    const dealClosingRate = calls > 0 ? (deals / calls) * 100 : 0;
-    const callEfficiency = days > 0 ? calls / days : 0;
-    const timeEfficiency = hours > 0 ? deals / hours : 0;
-    const revenuePerHour = hours > 0 ? revenue / hours : 0;
+    const weightedTotal =
+      score.closingRate * 0.25 +
+      score.revenuePerHour * 0.25 +
+      score.dealsPerDay * 0.15 +
+      score.callsPerDay * 0.10 +
+      score.revenuePerDeal * 0.10 +
+      score.callsPerDeal * 0.15;
 
-    // Calculate overall score (0-100)
-    const dealScore = Math.min(dealClosingRate * 2, 100); // 50% closing rate = 100 points
-    const callScore = Math.min(callEfficiency * 2, 100); // 50 calls/day = 100 points
-    const timeScore = Math.min(timeEfficiency * 50, 100); // 2 deals/hour = 100 points
-    const revenueScore = Math.min(revenuePerHour / 100, 100); // $10k/hour = 100 points
-
-    const overall = (dealScore + callScore + timeScore + revenueScore) / 4;
-
-    setScore({
-      overall: Math.round(overall),
-      dealClosingRate: Math.round(dealClosingRate * 10) / 10,
-      callEfficiency: Math.round(callEfficiency * 10) / 10,
-      timeEfficiency: Math.round(timeEfficiency * 100) / 100,
-      revenuePerHour: Math.round(revenuePerHour),
-    });
-
-    setShowResults(true);
+    return weightedTotal;
   };
 
-  const getScoreColor = (score: number) => {
-    if (score >= 80) return "text-green-600";
-    if (score >= 60) return "text-yellow-600";
-    return "text-red-600";
+  const saveScoreToDatabase = async (finalScore: number, finalTier: string) => {
+    const today = new Date().toISOString().split("T")[0];
+    const payload = {
+      date: today,
+      userId: "user-123", // Replace with dynamic user ID if using auth
+      score: finalScore.toFixed(1),
+      tier: finalTier,
+      inputs,
+    };
+
+    try {
+      const res = await fetch("/api/efficiency-score", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (!res.ok) throw new Error("Network response was not ok");
+    } catch (err) {
+      console.error("Failed to save score to Neon DB", err);
+    }
   };
 
-  const getRecommendations = () => {
-    if (!score) return [];
+  useEffect(() => {
+    const score = calculateScore();
+    const tier = getTier(score);
+    setScoreData({ score: score.toFixed(1), tier });
+    saveScoreToDatabase(score, tier);
+  }, [inputs]);
 
-    const recommendations = [];
-    
-    if (score.dealClosingRate < 10) {
-      recommendations.push("Focus on lead qualification to improve your closing rate");
-    }
-    if (score.callEfficiency < 20) {
-      recommendations.push("Increase daily prospecting activities for more opportunities");
-    }
-    if (score.timeEfficiency < 1) {
-      recommendations.push("Streamline your sales process to close deals faster");
-    }
-
-    return recommendations;
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setInputs({ ...inputs, [e.target.name]: parseFloat(e.target.value) || 0 });
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8 px-4">
-      <div className="max-w-6xl mx-auto">
-        {/* Header */}
-        <div className="text-center mb-8">
-          <div className="flex justify-center mb-4">
-            <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center">
-              <Calculator className="h-8 w-8 text-blue-600" />
-            </div>
+    <div className="p-6 bg-white rounded-xl shadow-md w-full max-w-3xl mx-auto">
+      <h2 className="text-xl font-bold mb-4">Agent Efficiency Calculator</h2>
+      <div className="grid grid-cols-2 gap-4">
+        {Object.entries(inputs).map(([key, value]) => (
+          <div key={key}>
+            <label className="block font-medium capitalize">{key.replace(/([A-Z])/g, " $1")}</label>
+            <input
+              type="number"
+              name={key}
+              value={value}
+              onChange={handleChange}
+              className="w-full border rounded px-2 py-1"
+            />
           </div>
-          <h1 className="text-3xl font-bold text-gray-900 mb-4">
-            Free Agent Efficiency Calculator
-          </h1>
-          <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-            Discover your personal efficiency score and get 3 actionable tips to double your 
-            GCI in the next 12 months.
-          </p>
-        </div>
+        ))}
+      </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* Input Form */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center text-lg font-medium text-gray-900">
-                <TrendingUp className="h-5 w-5 mr-2" />
-                Enter Your Performance Data
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Total Closed Deals (Last 12 Months)
-                </label>
-                <Input
-                  type="number"
-                  placeholder="e.g. 24"
-                  value={formData.closedDeals}
-                  onChange={(e) => handleInputChange("closedDeals", e.target.value)}
-                  className="w-full"
-                />
-              </div>
+      <div className="mt-6">
+        <p className="text-lg font-semibold">
+          Efficiency Score: <span className="text-blue-600">{scoreData.score} / 100</span>
+        </p>
+        <p className="text-md font-medium text-gray-700">Tier: <span className="text-green-600">{scoreData.tier}</span></p>
+      </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Total Prospecting Calls Made
-                </label>
-                <Input
-                  type="number"
-                  placeholder="e.g. 1200"
-                  value={formData.prospectingCalls}
-                  onChange={(e) => handleInputChange("prospectingCalls", e.target.value)}
-                  className="w-full"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Hours Worked on Real Estate
-                </label>
-                <Input
-                  type="number"
-                  placeholder="e.g. 2000"
-                  value={formData.hoursWorked}
-                  onChange={(e) => handleInputChange("hoursWorked", e.target.value)}
-                  className="w-full"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Total Revenue Generated
-                </label>
-                <Input
-                  type="number"
-                  placeholder="e.g. 120000"
-                  value={formData.revenue}
-                  onChange={(e) => handleInputChange("revenue", e.target.value)}
-                  className="w-full"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Active Working Days
-                </label>
-                <Input
-                  type="number"
-                  placeholder="e.g. 250"
-                  value={formData.activeDays}
-                  onChange={(e) => handleInputChange("activeDays", e.target.value)}
-                  className="w-full"
-                />
-              </div>
-
-              <Button 
-                onClick={calculateEfficiency}
-                className="w-full bg-purple-600 hover:bg-purple-700 text-white font-medium py-3"
-                size="lg"
-              >
-                Calculate My Efficiency Score
-              </Button>
-            </CardContent>
-          </Card>
-
-          {/* Results */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center text-lg font-medium text-gray-900">
-                <Star className="h-5 w-5 mr-2" />
-                Your Efficiency Report
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {!showResults ? (
-                <div className="text-center py-12">
-                  <Calculator className="h-16 w-16 text-gray-300 mx-auto mb-4" />
-                  <p className="text-gray-500">
-                    Enter your data to see your personalized efficiency 
-                    score and improvement recommendations.
-                  </p>
-                </div>
-              ) : (
-                <div className="space-y-6">
-                  {score && (
-                    <>
-                      {/* Overall Score */}
-                      <div className="text-center p-6 bg-gray-50 rounded-lg">
-                        <div className={`text-4xl font-bold ${getScoreColor(score.overall)} mb-2`}>
-                          {score.overall}/100
-                        </div>
-                        <p className="text-gray-600">Overall Efficiency Score</p>
-                      </div>
-
-                      {/* Detailed Metrics */}
-                      <div className="grid grid-cols-2 gap-4">
-                        <div className="text-center p-4 border rounded-lg">
-                          <div className="text-2xl font-bold text-gray-900">
-                            {score.dealClosingRate}%
-                          </div>
-                          <p className="text-sm text-gray-600">Closing Rate</p>
-                        </div>
-                        <div className="text-center p-4 border rounded-lg">
-                          <div className="text-2xl font-bold text-gray-900">
-                            {score.callEfficiency}
-                          </div>
-                          <p className="text-sm text-gray-600">Calls/Day</p>
-                        </div>
-                        <div className="text-center p-4 border rounded-lg">
-                          <div className="text-2xl font-bold text-gray-900">
-                            ${score.revenuePerHour}
-                          </div>
-                          <p className="text-sm text-gray-600">Revenue/Hour</p>
-                        </div>
-                        <div className="text-center p-4 border rounded-lg">
-                          <div className="text-2xl font-bold text-gray-900">
-                            {score.timeEfficiency}
-                          </div>
-                          <p className="text-sm text-gray-600">Deals/Hour</p>
-                        </div>
-                      </div>
-
-                      {/* Recommendations */}
-                      {getRecommendations().length > 0 && (
-                        <div className="bg-blue-50 p-4 rounded-lg">
-                          <h4 className="font-semibold text-gray-900 mb-2">
-                            💡 Improvement Recommendations:
-                          </h4>
-                          <ul className="space-y-1">
-                            {getRecommendations().map((rec, index) => (
-                              <li key={index} className="text-sm text-gray-700">
-                                • {rec}
-                              </li>
-                            ))}
-                          </ul>
-                        </div>
-                      )}
-
-                      {/* CTA */}
-                      <div className="bg-gradient-to-r from-purple-500 to-blue-600 text-white p-6 rounded-lg text-center">
-                        <h3 className="text-lg font-bold mb-2">
-                          Ready to Double Your Efficiency?
-                        </h3>
-                        <p className="text-sm mb-4 opacity-90">
-                          Get advanced analytics, market timing AI, and automated workflows 
-                          to boost your performance to the next level.
-                        </p>
-                        <Button 
-                          onClick={() => window.location.href = '/billing'}
-                          className="bg-white text-purple-600 hover:bg-gray-100 font-semibold"
-                        >
-                          Start Your Free Trial
-                          <ArrowRight className="h-4 w-4 ml-2" />
-                        </Button>
-                      </div>
-                    </>
-                  )}
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Social Proof */}
-        <div className="mt-12 text-center">
-          <h2 className="text-2xl font-bold text-gray-900 mb-8">
-            Join 10,000+ Top-Performing Agents
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-4xl mx-auto">
-            <div className="text-center">
-              <div className="text-3xl font-bold text-blue-600 mb-2">156%</div>
-              <p className="text-gray-600">Average GCI increase in first year</p>
-            </div>
-            <div className="text-center">
-              <div className="text-3xl font-bold text-green-600 mb-2">23 days</div>
-              <p className="text-gray-600">Reduction in average days on market</p>
-            </div>
-            <div className="text-center">
-              <div className="text-3xl font-bold text-purple-600 mb-2">4.8/5</div>
-              <p className="text-gray-600">Agent satisfaction rating</p>
-            </div>
-          </div>
-        </div>
+      <div className="mt-8">
+        <h3 className="text-md font-semibold mb-2">Efficiency Tiers</h3>
+        <ul className="list-disc ml-6 text-sm">
+          <li><strong>Platinum</strong>: 85–100</li>
+          <li><strong>Gold</strong>: 70–84.9</li>
+          <li><strong>Silver</strong>: 55–69.9</li>
+          <li><strong>Bronze</strong>: 40–54.9</li>
+          <li><strong>Needs Work</strong>: Below 40</li>
+        </ul>
       </div>
     </div>
   );

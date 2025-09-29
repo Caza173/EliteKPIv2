@@ -76,6 +76,8 @@ export default function Cmas() {
 
   const convertToListingMutation = useMutation({
     mutationFn: async (cma: Cma) => {
+      console.log('Converting CMA to listing:', cma);
+      
       // Create property from CMA data
       const propertyData = {
         address: cma.address,
@@ -91,6 +93,8 @@ export default function Cmas() {
         notes: `Converted from CMA. ${cma.notes || ''}`.trim(),
       };
 
+      console.log('Property data to create:', propertyData);
+
       // Create the property
       const propertyResponse = await fetch("/api/properties", {
         method: "POST",
@@ -99,12 +103,16 @@ export default function Cmas() {
         body: JSON.stringify(propertyData),
       });
 
+      console.log('Property response status:', propertyResponse.status);
+
       if (!propertyResponse.ok) {
         const errorData = await propertyResponse.json();
+        console.error('Property creation failed:', errorData);
         throw new Error(`Failed to create property: ${errorData.message || 'Unknown error'}`);
       }
 
       const newProperty = await propertyResponse.json();
+      console.log('Property created successfully:', newProperty);
 
       // Update CMA status to converted_to_listing
       const cmaResponse = await fetch(`/api/cmas/${cma.id}`, {
@@ -114,8 +122,12 @@ export default function Cmas() {
         credentials: 'include',
       });
 
+      console.log('CMA update response status:', cmaResponse.status);
+
       if (!cmaResponse.ok) {
-        throw new Error('Failed to update CMA status');
+        const cmaErrorData = await cmaResponse.json();
+        console.error('CMA update failed:', cmaErrorData);
+        throw new Error(`Failed to update CMA status: ${cmaErrorData.message || 'Unknown error'}`);
       }
 
       return { property: newProperty, cma };
@@ -305,7 +317,16 @@ export default function Cmas() {
 
                 <div className="flex justify-between items-center mt-4 pt-4 border-t border-gray-200">
                   <div className="flex gap-2">
-                    {cma.status !== 'converted_to_listing' && (
+                    {cma.status === 'converted_to_listing' ? (
+                      <Button
+                        size="sm"
+                        variant="default"
+                        disabled
+                      >
+                        <CheckCircle className="h-4 w-4 mr-1" />
+                        Converted
+                      </Button>
+                    ) : (
                       <Button
                         size="sm"
                         variant="outline"

@@ -5,6 +5,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
@@ -38,9 +39,13 @@ interface AddPropertyModalProps {
 }
 
 export default function AddPropertyModal({ isOpen, onClose }: AddPropertyModalProps) {
+  console.log('AddPropertyModal rendered with isOpen:', isOpen);
+  
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const propertyUsage = useResourceUsage('properties');
+
+  console.log('PropertyUsage:', propertyUsage);
 
   const form = useForm({
     resolver: zodResolver(insertPropertySchema),
@@ -110,14 +115,30 @@ export default function AddPropertyModal({ isOpen, onClose }: AddPropertyModalPr
     createPropertyMutation.mutate(processedData);
   };
 
+  console.log('About to render Dialog with isOpen:', isOpen);
+
+  // Temporarily use simple modal structure instead of Dialog
+  if (!isOpen) return null;
+
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle>Add New Property</DialogTitle>
-          {/* Property usage indicator */}
-          <div className="text-sm text-gray-600 mt-2">
-            Properties: {propertyUsage.current}/{propertyUsage.limit === Infinity ? '∞' : propertyUsage.limit}
+    <div className="fixed inset-0 z-[9999] bg-black/50 flex items-center justify-center p-4">
+      <div className="bg-white rounded-lg shadow-lg w-full max-w-[600px] max-h-[90vh] overflow-y-auto">
+        <div className="flex items-center justify-between p-6 border-b">
+          <div>
+            <h2 className="text-lg font-semibold text-black">Add New Property</h2>
+            {/* Property usage indicator */}
+            <div className="text-sm text-gray-600 mt-2">
+              Properties: {propertyUsage.current}/{propertyUsage.limit === Infinity ? '∞' : propertyUsage.limit}
+            </div>
+          </div>
+          <button
+            onClick={onClose}
+            className="text-gray-400 hover:text-gray-600 text-xl font-bold"
+          >
+            ×
+          </button>
+        </div>
+        <div className="p-6 space-y-4">
             {propertyUsage.limit !== Infinity && (
               <div className="w-full bg-gray-200 rounded-full h-2 mt-1">
                 <div 
@@ -129,8 +150,6 @@ export default function AddPropertyModal({ isOpen, onClose }: AddPropertyModalPr
                 />
               </div>
             )}
-          </div>
-        </DialogHeader>
         
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -446,14 +465,15 @@ export default function AddPropertyModal({ isOpen, onClose }: AddPropertyModalPr
               <Button
                 type="submit"
                 disabled={createPropertyMutation.isPending}
-                className="bg-blue-600 hover:bg-blue-700"
+                className="bg-white border-2 border-blue-600 text-black hover:bg-gray-50"
               >
                 {createPropertyMutation.isPending ? "Saving..." : "Save Property"}
               </Button>
             </div>
           </form>
         </Form>
-      </DialogContent>
-    </Dialog>
+        </div>
+      </div>
+    </div>
   );
 }

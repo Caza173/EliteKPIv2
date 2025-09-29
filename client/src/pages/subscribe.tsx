@@ -133,7 +133,6 @@ export default function Subscribe() {
         "Team collaboration tools",
         "Custom dashboards",
         "AI-powered pricing strategies",
-        "Market Timing AI & Offer Strategies",
         "Office Challenges & Competition Hub",
         "Custom branding & API access",
         "Priority support"

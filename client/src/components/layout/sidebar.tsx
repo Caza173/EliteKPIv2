@@ -20,11 +20,10 @@ import {
   Users,
   X,
   Brain,
-  MessageSquare,
   Lightbulb,
   GraduationCap,
-  Plug,
-  TrendingDown
+  TrendingDown,
+  Calendar
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -36,16 +35,14 @@ interface SidebarProps {
 const baseNavigation = [
   { name: 'Dashboard', href: '/', icon: BarChart3 },
   { name: 'Properties', href: '/properties', icon: Home },
-  { name: 'Log Activities & Goals', href: '/activities', icon: Activity },
   { name: 'CMAs', href: '/cmas', icon: FileText },
   { name: 'Expense Analysis', href: '/expense-analysis', icon: TrendingDown },
   { name: 'Reports', href: '/reports', icon: TrendingUp },
   { name: 'Performance', href: '/performance', icon: PieChart },
+  { name: 'KPI Calendar', href: '/calendar', icon: Calendar },
 ];
 
 const professionalNavigation = [
-  { name: 'Market Timing AI', href: '/market-timing', icon: Brain, requiresPlan: 'professional' },
-  { name: 'Offer Strategies', href: '/offer-strategies', icon: Target, requiresPlan: 'professional' },
   { name: 'Office Challenges', href: '/office-competitions', icon: Users, requiresPlan: 'professional' },
   { name: 'Competition Hub', href: '/competition', icon: Trophy, requiresPlan: 'professional' },
 ];
@@ -59,10 +56,8 @@ const enterpriseNavigation: any[] = [
 ];
 
 const bottomNavigation = [
-  { name: 'Integrations', href: '/integrations', icon: Plug },
   { name: 'GCI Calculator', href: '/calculator', icon: Calculator },
   { name: 'Billing', href: '/billing', icon: CreditCard },
-  { name: 'Feedback', href: '/feedback', icon: MessageSquare },
   { name: 'Settings', href: '/settings', icon: Settings },
   { name: 'Help', href: '/help', icon: HelpCircle },
 ];

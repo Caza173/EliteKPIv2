@@ -267,7 +267,7 @@ export default function PropertyDetailsSheet({
               href={`https://www.zillow.com/homes/${encodeURIComponent(property.address)}_rb/`}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors"
+              className="inline-flex items-center gap-2 bg-white border-2 border-blue-600 hover:bg-gray-50 text-black px-4 py-2 rounded-lg transition-colors"
             >
               <ExternalLink className="h-4 w-4" />
               View on Zillow
@@ -362,6 +362,7 @@ export default function PropertyDetailsSheet({
                     </Button>
                     <Button
                       size="sm"
+                      className="bg-white border-2 border-blue-600 text-black hover:bg-gray-50"
                       onClick={form.handleSubmit(onSubmit)}
                       disabled={updatePropertyMutation.isPending}
                     >
@@ -378,46 +379,46 @@ export default function PropertyDetailsSheet({
               <>
                 <div className="grid grid-cols-2 gap-4 text-sm">
                   <div>
-                    <span className="text-muted-foreground">Client:</span>
-                    <div className="font-medium">{property.clientName || 'Not specified'}</div>
+                    <span className="text-gray-600">Client:</span>
+                    <div className="font-medium text-black">{property.clientName || 'Not specified'}</div>
                   </div>
                   <div>
-                    <span className="text-muted-foreground">Type:</span>
-                    <div className="font-medium">
+                    <span className="text-gray-600">Type:</span>
+                    <div className="font-medium text-black">
                       {property.representationType === 'buyer_rep' ? 'Buyer Rep' : 'Seller Rep'}
                     </div>
                   </div>
                   <div>
-                    <span className="text-muted-foreground">Bedrooms:</span>
-                    <div className="font-medium">{property.bedrooms || 'N/A'}</div>
+                    <span className="text-gray-600">Bedrooms:</span>
+                    <div className="font-medium text-black">{property.bedrooms || 'N/A'}</div>
                   </div>
                   <div>
-                    <span className="text-muted-foreground">Bathrooms:</span>
-                    <div className="font-medium">{property.bathrooms || 'N/A'}</div>
+                    <span className="text-gray-600">Bathrooms:</span>
+                    <div className="font-medium text-black">{property.bathrooms || 'N/A'}</div>
                   </div>
                   <div>
-                    <span className="text-muted-foreground">Square Feet:</span>
-                    <div className="font-medium">
+                    <span className="text-gray-600">Square Feet:</span>
+                    <div className="font-medium text-black">
                       {property.squareFeet ? `${property.squareFeet} sq ft` : 'N/A'}
                     </div>
                   </div>
                   <div>
-                    <span className="text-muted-foreground">Listing Price:</span>
-                    <div className="font-medium">{formatCurrency(property.listingPrice)}</div>
+                    <span className="text-gray-600">Listing Price:</span>
+                    <div className="font-medium text-black">{formatCurrency(property.listingPrice)}</div>
                   </div>
                 </div>
 
                 {property.listingDate && (
                   <div className="text-sm">
-                    <span className="text-muted-foreground">Listed:</span>
-                    <span className="ml-2 font-medium">{formatDate(property.listingDate)}</span>
+                    <span className="text-gray-600">Listed:</span>
+                    <span className="ml-2 font-medium text-black">{formatDate(property.listingDate)}</span>
                   </div>
                 )}
 
                 {property.soldDate && (
                   <div className="text-sm">
-                    <span className="text-muted-foreground">Sold:</span>
-                    <span className="ml-2 font-medium">{formatDate(property.soldDate)}</span>
+                    <span className="text-gray-600">Sold:</span>
+                    <span className="ml-2 font-medium text-black">{formatDate(property.soldDate)}</span>
                     {property.soldPrice && (
                       <span className="ml-4 font-medium text-green-600">
                         {formatCurrency(property.soldPrice)}
@@ -656,15 +657,15 @@ export default function PropertyDetailsSheet({
           {/* Enhanced 3-Tab System */}
           <Tabs defaultValue="overview" className="w-full">
             <TabsList className="grid w-full grid-cols-3">
-              <TabsTrigger value="overview">
+              <TabsTrigger value="overview" className="bg-white border-2 border-blue-600 text-black hover:bg-gray-50 data-[state=active]:bg-blue-50">
                 <User className="h-4 w-4" />
                 Overview & Financial
               </TabsTrigger>
-              <TabsTrigger value="commissions">
+              <TabsTrigger value="commissions" className="bg-white border-2 border-blue-600 text-black hover:bg-gray-50 data-[state=active]:bg-blue-50">
                 <DollarSign className="h-4 w-4" />
                 Commissions
               </TabsTrigger>
-              <TabsTrigger value="expenses">
+              <TabsTrigger value="expenses" className="bg-white border-2 border-blue-600 text-black hover:bg-gray-50 data-[state=active]:bg-blue-50">
                 <Receipt className="h-4 w-4" />
                 Expenses & Time
               </TabsTrigger>
@@ -746,7 +747,7 @@ export default function PropertyDetailsSheet({
                 </h3>
                 <Button 
                   size="sm" 
-                  className="bg-green-600 hover:bg-green-700"
+                  className="bg-white border-2 border-blue-600 text-black hover:bg-gray-50"
                   onClick={() => setActiveModal("commission")}
                 >
                   <Plus className="h-4 w-4 mr-1" />
@@ -800,7 +801,7 @@ export default function PropertyDetailsSheet({
                   <Button 
                     size="sm" 
                     variant="outline" 
-                    className="text-orange-600"
+                    className="bg-white border-2 border-blue-600 text-black hover:bg-gray-50"
                     onClick={() => setActiveModal("mileage")}
                   >
                     <Car className="h-4 w-4 mr-1" />
@@ -809,7 +810,7 @@ export default function PropertyDetailsSheet({
                   <Button 
                     size="sm" 
                     variant="outline" 
-                    className="text-green-600"
+                    className="bg-white border-2 border-blue-600 text-black hover:bg-gray-50"
                     onClick={() => setActiveModal("time")}
                   >
                     <Clock className="h-4 w-4 mr-1" />

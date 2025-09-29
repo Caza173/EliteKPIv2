@@ -16,7 +16,6 @@ import {
   FormDescription,
 } from "@/components/ui/form";
 import { Settings, DollarSign, Car, Clock, Percent, Save, Database, Globe, CheckCircle, AlertCircle, Shield } from "lucide-react";
-import { MLSSettingsSection } from "@/components/mls-settings";
 import ChangePasswordForm from "@/components/auth/change-password-form";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
@@ -612,9 +611,6 @@ export default function UserSettings() {
             </div>
           </CardContent>
         </Card>
-
-        {/* MLS Integration Settings */}
-        <MLSSettingsSection />
       </div>
     </div>
   );

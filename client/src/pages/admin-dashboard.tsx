@@ -81,7 +81,7 @@ export default function AdminDashboard() {
     <AdminLayout>
       <div className="space-y-6" data-testid="admin-dashboard">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">
+          <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-black">
             Admin Dashboard
           </h1>
           <p className="text-slate-600 dark:text-slate-400">
@@ -175,7 +175,7 @@ export default function AdminDashboard() {
                           {feedback.priority}
                         </Badge>
                       </div>
-                      <div className="text-xs text-slate-600">
+                      <div className="text-xs text-slate-800">
                         From: {feedback.userName} • {format(new Date(feedback.createdAt), 'MMM d, yyyy')}
                       </div>
                     </div>

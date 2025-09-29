@@ -359,7 +359,10 @@ export default function ExpenseBreakdown() {
             )}
             
             <div className="flex justify-end mt-6">
-              <Button variant="outline" onClick={() => setShowExpenseModal(false)}>
+              <Button 
+                className="bg-white border-2 border-blue-600 text-black hover:bg-gray-50"
+                onClick={() => setShowExpenseModal(false)}
+              >
                 Close
               </Button>
             </div>

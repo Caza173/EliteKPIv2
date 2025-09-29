@@ -1,12 +1,7 @@
 import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+// Dialog imports removed - now using div-based modal
 import {
   Form,
   FormControl,
@@ -193,12 +188,21 @@ export default function AddMileageModal({ isOpen, onClose, propertyId }: AddMile
     createMileageMutation.mutate(data);
   };
 
+  if (!isOpen) return null;
+
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[500px]">
-        <DialogHeader>
-          <DialogTitle>Log Mileage</DialogTitle>
-        </DialogHeader>
+    <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
+      <div className="bg-white rounded-lg shadow-lg w-full max-w-[500px] max-h-[90vh] overflow-y-auto">
+        <div className="flex items-center justify-between p-6 border-b">
+          <h2 className="text-lg font-semibold">Log Mileage</h2>
+          <button
+            onClick={onClose}
+            className="text-gray-400 hover:text-gray-600 text-xl font-bold"
+          >
+            ×
+          </button>
+        </div>
+        <div className="p-6">
         
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -417,7 +421,8 @@ export default function AddMileageModal({ isOpen, onClose, propertyId }: AddMile
             </div>
           </form>
         </Form>
-      </DialogContent>
-    </Dialog>
+        </div>
+      </div>
+    </div>
   );
 }

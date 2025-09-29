@@ -33,9 +33,9 @@ export default function AdminLoginPage() {
       <Card className="w-full max-w-md mx-4 relative z-10 shadow-2xl border-slate-700 bg-slate-800/95 backdrop-blur">
         <CardHeader className="text-center space-y-4">
           <div className="mx-auto w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center">
-            <Shield className="h-8 w-8 text-white" />
+            <Shield className="h-8 w-8 text-black" />
           </div>
-          <CardTitle className="text-2xl font-bold text-white">Admin Access</CardTitle>
+          <CardTitle className="text-2xl font-bold text-black">Admin Access</CardTitle>
           <CardDescription className="text-slate-300">
             Secure administrative portal for EliteKPI platform management
           </CardDescription>

@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { BarChart3, TrendingUp, Target, Calculator, Shield, Mail, ArrowRight, Star } from "lucide-react";
 import { Link } from "wouter";
 import TraditionalLogin from "@/components/auth/traditional-login";
+import TraditionalSignup from "@/components/auth/traditional-signup";
 
 const handleSSO = () => {
   window.location.href = '/api/login';
@@ -11,11 +12,41 @@ const handleSSO = () => {
 
 export default function Landing() {
   const [showTraditionalLogin, setShowTraditionalLogin] = useState(false);
+  const [showTraditionalSignup, setShowTraditionalSignup] = useState(false);
+
+  const handleBackToLanding = () => {
+    setShowTraditionalLogin(false);
+    setShowTraditionalSignup(false);
+  };
+
+  const handleSwitchToLogin = () => {
+    setShowTraditionalSignup(false);
+    setShowTraditionalLogin(true);
+  };
+
+  const handleSwitchToSignup = () => {
+    setShowTraditionalLogin(false);
+    setShowTraditionalSignup(true);
+  };
 
   if (showTraditionalLogin) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-        <TraditionalLogin onBack={() => setShowTraditionalLogin(false)} />
+        <TraditionalLogin 
+          onBack={handleBackToLanding}
+          onSwitchToSignup={handleSwitchToSignup}
+        />
+      </div>
+    );
+  }
+
+  if (showTraditionalSignup) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+        <TraditionalSignup 
+          onBack={handleBackToLanding}
+          onSwitchToLogin={handleSwitchToLogin}
+        />
       </div>
     );
   }
@@ -50,7 +81,14 @@ export default function Landing() {
                   className="hidden sm:flex"
                 >
                   <Mail className="h-4 w-4 mr-2" />
-                  Email Login
+                  Sign In
+                </Button>
+                <Button 
+                  variant="outline" 
+                  onClick={() => setShowTraditionalSignup(true)}
+                  className="hidden sm:flex"
+                >
+                  Sign Up
                 </Button>
                 <Button onClick={handleSSO}>
                   SSO / Google
@@ -74,10 +112,10 @@ export default function Landing() {
           <div className="mt-5 max-w-md mx-auto sm:flex sm:justify-center md:mt-8 gap-3">
             <Button 
               size="lg" 
-              onClick={handleSSO}
+              onClick={() => setShowTraditionalSignup(true)}
               className="w-full sm:w-auto"
             >
-              Get Started with SSO
+              Create Account
             </Button>
             <Button 
               size="lg" 
@@ -85,7 +123,15 @@ export default function Landing() {
               onClick={() => setShowTraditionalLogin(true)}
               className="w-full sm:w-auto"
             >
-              Email Login
+              Sign In
+            </Button>
+            <Button 
+              size="lg" 
+              variant="secondary"
+              onClick={handleSSO}
+              className="w-full sm:w-auto"
+            >
+              SSO / Google
             </Button>
           </div>
           

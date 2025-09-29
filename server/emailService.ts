@@ -1,8 +1,13 @@
 import sgMail from '@sendgrid/mail';
 
 // Initialize SendGrid only if the API key is available
+console.log('🔐 SENDGRID_API_KEY exists:', !!process.env.SENDGRID_API_KEY);
+console.log('🔐 SENDGRID_API_KEY length:', process.env.SENDGRID_API_KEY?.length);
+console.log('🔐 SENDGRID_API_KEY starts with SG.:', process.env.SENDGRID_API_KEY?.startsWith('SG.'));
+
 if (process.env.SENDGRID_API_KEY) {
   sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+  console.log('✅ SendGrid initialized successfully');
 }
 
 interface EmailParams {
@@ -16,10 +21,16 @@ interface EmailParams {
 export async function sendEmail(params: EmailParams): Promise<boolean> {
   try {
     if (!process.env.SENDGRID_API_KEY) {
-      console.error('SendGrid API key not configured');
+      console.error('❌ SendGrid API key not configured. Please add SENDGRID_API_KEY to your .env file');
       return false;
     }
 
+    if (process.env.SENDGRID_API_KEY === 'YOUR_SENDGRID_API_KEY_HERE') {
+      console.error('❌ Please replace the placeholder SENDGRID_API_KEY with your actual SendGrid API key');
+      return false;
+    }
+
+    console.log(`📧 Attempting to send email to: ${params.to}`);
     await sgMail.send({
       to: params.to,
       from: params.from,
@@ -27,9 +38,14 @@ export async function sendEmail(params: EmailParams): Promise<boolean> {
       text: params.text || '',
       html: params.html || '',
     });
+    
+    console.log('✅ Email sent successfully via SendGrid');
     return true;
-  } catch (error) {
-    console.error('SendGrid email error:', error);
+  } catch (error: any) {
+    console.error('❌ SendGrid email error:', error);
+    if (error.response) {
+      console.error('❌ SendGrid response:', error.response.body);
+    }
     return false;
   }
 }

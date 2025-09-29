@@ -1,7 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Plug, Clock, Zap, Building, Mail, BarChart3, CreditCard, User, Database, CheckCircle } from "lucide-react";
+import { Plug, Clock, Zap, BarChart3, Database, CheckCircle } from "lucide-react";
 import { MLSSettingsSection } from "@/components/mls-settings";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
@@ -22,41 +22,6 @@ export function IntegrationsPage() {
       icon: Zap,
       category: "Automation",
       color: "from-orange-400 to-orange-600"
-    },
-    {
-      name: "DocuSign",
-      description: "Seamlessly integrate contract signing into your transaction process",
-      icon: Building,
-      category: "Documents",
-      color: "from-blue-400 to-blue-600"
-    },
-    {
-      name: "Mailchimp",
-      description: "Sync your client data with email marketing campaigns",
-      icon: Mail,
-      category: "Marketing",
-      color: "from-cyan-400 to-cyan-600"
-    },
-    {
-      name: "QuickBooks",
-      description: "Automatically sync commissions and expenses with your accounting",
-      icon: BarChart3,
-      category: "Accounting",
-      color: "from-green-400 to-green-600"
-    },
-    {
-      name: "Stripe",
-      description: "Process payments and manage subscriptions directly in EliteKPI",
-      icon: CreditCard,
-      category: "Payments",
-      color: "from-purple-400 to-purple-600"
-    },
-    {
-      name: "HubSpot",
-      description: "Connect your CRM data with performance tracking",
-      icon: User,
-      category: "CRM",
-      color: "from-pink-400 to-pink-600"
     }
   ];
 
